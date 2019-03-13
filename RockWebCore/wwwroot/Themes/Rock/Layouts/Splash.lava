@@ -1,0 +1,37 @@
+﻿<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta charset="utf-8">
+    <title></title>
+
+    <!-- Set the viewport width to device width for mobile disabling zooming -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+    <script src="{{ '~/Scripts/modernizr.js' | ResolveRockUrl:true }}" ></script>
+
+    <!-- Included CSS Files -->
+    <link rel="stylesheet" href="{{ '~/Themes/Rock/Styles/bootstrap.css' | ResolveRockUrl:true }}" />
+	<link rel="stylesheet" href="{{ '~/Themes/Rock/Styles/theme.css' | ResolveRockUrl:true }}" />
+	<link rel="stylesheet" href="{{ '~/Styles/developer.css' | ResolveRockUrl:true }}" />
+
+    <script src="<{{ '~/Scripts/bootstrap.min.js' | ResolveRockUrl:true }}" ></script>
+
+</head>
+<body id="splash">
+
+    <form id="form1" runat="server">
+
+        <div id="content">
+            <div id="logo">
+                {{ '~/Assets/Images/rock-logo-circle.svg' | ReadFile }}
+            </div>
+
+            <div id="content-box" class="clearfix">
+                {{ CurrentPage.ZoneContent.Main }}
+            </div>
+        </div>
+
+    </form>
+</body>
+</html>

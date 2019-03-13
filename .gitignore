@@ -1,0 +1,41 @@
+#file types
+_ReSharper.*
+*.resharper
+*.DS_Store
+*.tlog
+*.vsp
+*.psess
+*.v11.suo
+*.user
+*.suo
+#*.Framework.XML
+
+#specific files
+RockJobSchedulerService.Xml
+web.[Cc]onnectionStrings.config
+desktop.ini
+Rock.XML
+pageviews.csv
+RockLogster.csv
+Quartz.xml
+StyleCop.Cache
+
+#specific folders
+[Oo]bj/
+RockWeb/Cache/*
+RockWeb/Content/ASM_Thumbnails
+RockWeb/App_Data/PackageStaging
+/scaffolding.config
+*.sln.GhostDoc.xml
+.vs/
+.localhistory/
+
+Packages/*
+
+# javascript deps
+node_modules
+*.map
+/packages/
+/Installers/CheckScannerInstall/UpgradeLog.htm
+/Installers/CheckScannerInstall/UpgradeLog2.htm
+/Installers/CheckScannerInstall_2017/CheckScannerInstall
