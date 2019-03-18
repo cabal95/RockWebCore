@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AngleSharp" Version="0.11.0" />
     <PackageReference Include="Fluid.Core" Version="1.0.0-beta-9545" />
     <PackageReference Include="Karambolo.AspNetCore.Bundling" Version="1.1.0" />
     <PackageReference Include="Karambolo.AspNetCore.Bundling.Less" Version="1.1.0" />
@@ -21,6 +22,11 @@
     <ProjectReference Include="..\..\RockNetCore\Rock.Rest\Rock.Rest.Core.csproj" />
     <ProjectReference Include="..\..\RockNetCore\Rock.Version\Rock.Version.Core.csproj" />
     <ProjectReference Include="..\..\RockNetCore\Rock\Rock.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Blocks\Utility\check-list-item.component.vue.js" />
+    <None Include="wwwroot\Blocks\Utility\check-list-item.component.vue" />
   </ItemGroup>
 
 </Project>

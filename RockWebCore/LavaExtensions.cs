@@ -40,7 +40,7 @@ namespace RockWebCore
                 return accessor;
             }
 
-            if ( typeof( ILavaSafe ).IsAssignableFrom( type ) )
+            if ( typeof( ILavaSafe ).IsAssignableFrom( type ) || typeof( Rock.Lava.ILiquidizable ).IsAssignableFrom( type ) )
             {
                 return new LavaSafeAccessor();
             }
@@ -142,7 +142,9 @@ namespace RockWebCore
 
         public static FluidValue ResolveRockUrl( FluidValue input, FilterArguments arguments, TemplateContext context )
         {
-            return FluidValue.Create( input.ToStringValue().Replace( "~~", "/Themes/Rock" ).Replace( "~", "" ) );
+            var url = input.ToStringValue().Replace( "~~", "/Themes/Rock" ).Replace( "~", "" );
+
+            return FluidValue.Create( url != string.Empty ? url : "/" );
         }
 
         public static FluidValue ReadFile( FluidValue input, FilterArguments arguments, TemplateContext context )

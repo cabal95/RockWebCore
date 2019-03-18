@@ -17,31 +17,31 @@
 
             <div class="row">
                 <div class="col-md-12">
-                    {{ CurrentPage.ZoneContent.Feature }}
+                    <rock:zone name="Feature" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-12">
-                    {{ CurrentPage.ZoneContent.Main }}
+                    <rock:zone name="Main" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-12">
-                    {{ CurrentPage.ZoneContent['Section A'] }}
+                    <rock:zone name="Section A" />
                 </div>
             </div>
 
             <div class="row">
                 <div class="col-md-4">
-                    {{ CurrentPage.ZoneContent['Section B'] }}
+                    <rock:zone name="Section B" />
                 </div>
                 <div class="col-md-4">
-                    {{ CurrentPage.ZoneContent['Section C'] }}
+                    <rock:zone name="Section C" />
                 </div>
                 <div class="col-md-4">
-                    {{ CurrentPage.ZoneContent['Section D'] }}
+                    <rock:zone name="Section D" />
                 </div>
             </div>
         </section>

@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
+
 using Karambolo.AspNetCore.Bundling;
+
 using Microsoft.AspNet.OData.Builder;
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -13,13 +11,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+
 using Rock.Rest;
+using RockWebCore.UI;
 
 namespace RockWebCore
 {
@@ -57,13 +57,11 @@ namespace RockWebCore
                 .UseDefaults( Environment )
                 .UseNUglify()
                 .AddLess()
-                .UseTimestampVersioning()
-                .EnableMinification();
+                .UseTimestampVersioning();
 
             services.AddOData();
 
             services.AddHttpContextAccessor();
-
         }
 
         public void Configure( IApplicationBuilder app, IHostingEnvironment env )
@@ -83,12 +81,76 @@ namespace RockWebCore
                     .Include( "/Scripts/jquery-3.3.1.js" )
                     .Include( "/Scripts/jquery-migrate-3.0.0.min.js" );
 
+                bundles.AddJs( "/RockLibs.js" )
+                .Include( "/Scripts/jquery-ui-1.10.4.custom.min.js" )
+                .Include( "/Scripts/bootstrap.min.js" )
+                .Include( "/Scripts/bootstrap-timepicker.js" )
+                .Include( "/Scripts/bootstrap-datepicker.js" )
+                .Include( "/Scripts/bootstrap-limit.js" )
+                .Include( "/Scripts/bootstrap-modalmanager.js" )
+                .Include( "/Scripts/bootstrap-modal.js" )
+                .Include( "/Scripts/bootbox.min.js" )
+                .Include( "/Scripts/chosen.jquery.min.js" )
+                .Include( "/Scripts/typeahead.min.js" )
+                .Include( "/Scripts/jquery.fileupload.js" )
+                .Include( "/Scripts/jquery.stickytableheaders.js" )
+                .Include( "/Scripts/iscroll.js" )
+                .Include( "/Scripts/jcrop.min.js" )
+                .Include( "/Scripts/ResizeSensor.js" )
+                .Include( "/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js" )
+                .Include( "/Scripts/Rock/Extensions/*.js" );
+
+                bundles.AddJs( "/RockUi.js" )
+                    .Include( "/Scripts/Rock/coreListeners.js" )
+                    .Include( "/Scripts/Rock/dialogs.js" )
+                    .Include( "/Scripts/Rock/settings.js" )
+                    .Include( "/Scripts/Rock/utility.js" )
+                    .Include( "/Scripts/Rock/Controls/*.js" )
+                    .Include( "/Scripts/Rock/reportingInclude.js" );
+
+                bundles.AddJs( "/RockValidation.js" )
+                    .Include( "/Scripts/Rock/Validate/*.js" );
+
+                // Creating a separate "Admin" bundle specifically for JS functionality that needs
+                // to be included for administrative users
+                bundles.AddJs( "/RockAdmin.js" )
+                    .Include( "/Scripts/Rock/Admin/*.js" );
             } );
 
-            app.UseMiddleware<RockRouterMiddleware>( app );
+            DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            DotLiquid.Template.FileSystem = new LavaFileSystem();
+            DotLiquid.Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+            DotLiquid.Template.RegisterSafeType( typeof( DBNull ), o => null );
+            DotLiquid.Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+
+            System.Web.HttpContext.Configure( app.ApplicationServices.GetRequiredService<IHttpContextAccessor>() );
 
             app.UseAuthentication();
             app.UseMiddleware<Rock.Rest.Filters.ApiKeyMiddleware>();
+
+            app.Use( async ( context, next ) =>
+            {
+                if ( !string.IsNullOrEmpty( context.User?.Identity?.Name ) )
+                {
+                    context.Items["CurrentPerson"] = new Rock.Model.UserLoginService( new Rock.Data.RockContext() ).GetByUserName( context.User.Identity.Name ).Person;
+                }
+
+                await next();
+            } );
+
+            //
+            // Temporary, since we don't have a way to clear cache without restarting, clear
+            // cache before each reqeust.
+            //
+            app.Use( async ( context, next ) =>
+            {
+                if ( context.Request.Query.ContainsKey( "clearcache" ) )
+                {
+                    Rock.Web.Cache.RockCache.ClearAllCachedItems();
+                }
+
+                await next();
+            } );
 
             var odataBuilder = new ODataConventionModelBuilder( app.ApplicationServices );
 
@@ -97,172 +159,24 @@ namespace RockWebCore
                 routeBuilder.EnableDependencyInjection();
             } );
 
-            System.Web.HttpContext.Configure( app.ApplicationServices.GetRequiredService<IHttpContextAccessor>() );
+            app.UseMiddleware<RockRouterMiddleware>( app );
 
             app.UseRockApi();
 
-            new Rock.Data.RockContext().Database.Migrate();
-
             app.UseStaticFiles();
-        }
-    }
 
-    public class RockPage : ILavaSafe
-    {
-        public int Id { get; set; }
-
-        public RockLayout Layout { get; private set; }
-
-        public string HeaderContent { get; set; }
-
-        public IReadOnlyDictionary<string, string> ZoneContent => new ReadOnlyDictionary<string, string>( _zoneContent );
-        private Dictionary<string, string> _zoneContent;
-
-        public IReadOnlyList<RockBlockBase> Blocks
-        {
-            get
-            {
-                return new ReadOnlyCollection<RockBlockBase>( _blocks );
-            }
-        }
-        private readonly List<RockBlockBase> _blocks = new List<RockBlockBase>();
-
-
-        public RockPage( int id )
-        {
-            Id = id;
-            if ( id == 2 )
-            {
-                Layout = new RockLayout( "Splash" );
-            }
-            else
-            {
-                Layout = new RockLayout( "Full Width", "Master" );
-            }
-        }
-
-        public void AddBlock( RockBlockBase block )
-        {
-            _blocks.Add( block );
-        }
-
-        /// <summary>
-        /// Calls the pre-render events on each block of the page.
-        /// </summary>
-        /// <returns>A task that can be awaited.</returns>
-        protected virtual async Task PreRenderAsync()
-        {
-            var preRenderTasks = _blocks.Select( b => b.PreRenderAsync() );
-
-            await Task.WhenAll( preRenderTasks );
-        }
-
-        /// <summary>
-        /// Renders the contents of each block and populates the ZoneContent property.
-        /// </summary>
-        /// <returns>A task that can be awaited.</returns>
-        protected async Task RenderAsync()
-        {
-            var content = new List<KeyValuePair<string, TextWriter>>();
-
-            var renderTasks = _blocks.Select( b =>
-            {
-                var writer = new StringWriter();
-
-                content.Add( new KeyValuePair<string, TextWriter>( b.Zone, writer ) );
-
-                return b.RenderAsync( writer );
-            } );
-
-            await Task.WhenAll( renderTasks );
-
-            _zoneContent = content.GroupBy( kv => kv.Key )
-                .ToDictionary( g => g.Key, g => string.Join( "\n", g.Select( w => w.Value.ToString() ) ) );
-        }
-
-        /// <summary>
-        /// Renders the page into the stream.
-        /// </summary>
-        /// <param name="stream">The stream to write the page contents to.</param>
-        /// <returns>A task that can be awaited.</returns>
-        public async Task RenderAsync( Stream stream )
-        {
-            await PreRenderAsync();
-
-            await RenderAsync();
-
-            var mergeFields = new Dictionary<string, object>
-            {
-                { "CurrentPage", this }
-            };
-
-            using ( var sw = new StreamWriter( stream, System.Text.Encoding.UTF8, 4096, true ) )
-            {
-                var layoutContent = await File.ReadAllTextAsync( Layout.RelativePath );
-
-                var content = await layoutContent.ResolveMergeFieldsAsync( mergeFields );
-
-                await sw.WriteAsync( content );
-            }
-        }
-    }
-
-    public class RockLayout : ILavaSafe
-    {
-        public string RelativePath
-        {
-            get
-            {
-                return $"wwwroot/Themes/{ThemeName}/Layouts/{FileName}.lava";
-            }
-        }
-
-        public string FileName { get; protected set; }
-
-        public string Name { get; protected set; }
-
-        public string ThemeName { get; protected set; }
-
-        public RockLayout( string layoutName )
-        {
-            Name = layoutName;
-            FileName = layoutName.Replace( " ", string.Empty );
-            ThemeName = "Rock";
-        }
-
-        public RockLayout( string layoutName, string fileName )
-            : this( layoutName )
-        {
-            FileName = fileName;
-        }
-    }
-
-    public class RockBlockBase
-    {
-        public string Zone { get; set; }
-
-        public virtual Task PreRenderAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public virtual async Task RenderAsync( TextWriter writer )
-        {
-            await writer.WriteLineAsync( "<p>Hello world!</p>" );
+            new Rock.Data.RockContext().Database.Migrate();
         }
     }
 
     public class MyApi : ControllerBase
     {
-        [Route( "/page/{pageId}" )]
+        [Microsoft.AspNetCore.Mvc.Route( "/page/{pageId}" )]
         public async Task<IActionResult> GetPage( int pageId )
         {
-            var rockPage = new RockPage( pageId );
+            HttpContext.Items["Rock:PageId"] = pageId;
 
-            rockPage.AddBlock( new RockBlockBase
-            {
-                Zone = "Main"
-            } );
+            var rockPage = new RockPage( pageId, HttpContext );
 
             var ms = new MemoryStream();
             await rockPage.RenderAsync( ms );
