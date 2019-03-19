@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 
 using Rock;
@@ -11,6 +9,7 @@ using Rock.Security;
 
 namespace RockWebCore.BlockTypes
 {
+    [LegacyBlock( "~/Blocks/Cms/HtmlContentDetail.ascx" )]
     public class HtmlContentDetail : RockBlockBase
     {
         public override async Task RenderAsync( TextWriter writer )

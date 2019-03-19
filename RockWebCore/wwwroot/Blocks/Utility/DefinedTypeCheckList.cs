@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -12,6 +14,7 @@ using Rock.Web.Cache;
 
 namespace RockWebCore.BlockTypes
 {
+    [LegacyBlock( "~/Blocks/Utility/DefinedTypeCheckList.ascx" )]
     public class DefinedTypeCheckList : RockBlockBase
     {
         public override async Task PreRenderAsync()

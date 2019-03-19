@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 using Karambolo.AspNetCore.Bundling;
@@ -19,6 +21,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using Rock.Rest;
+
 using RockWebCore.UI;
 
 namespace RockWebCore
@@ -132,7 +135,9 @@ namespace RockWebCore
             {
                 if ( !string.IsNullOrEmpty( context.User?.Identity?.Name ) )
                 {
-                    context.Items["CurrentPerson"] = new Rock.Model.UserLoginService( new Rock.Data.RockContext() ).GetByUserName( context.User.Identity.Name ).Person;
+                    var user = new Rock.Model.UserLoginService( new Rock.Data.RockContext() ).GetByUserName( context.User.Identity.Name );
+                    context.SetCurrentUser( user );
+                    context.SetCurrentPerson( user.Person );
                 }
 
                 await next();
@@ -178,11 +183,7 @@ namespace RockWebCore
 
             var rockPage = new RockPage( pageId, HttpContext );
 
-            var ms = new MemoryStream();
-            await rockPage.RenderAsync( ms );
-            ms.Position = 0;
-
-            return new FileStreamResult( ms, "text/html" );
+            return await rockPage.RenderAsync();
         }
     }
 }

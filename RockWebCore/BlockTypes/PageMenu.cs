@@ -13,6 +13,7 @@ using Rock.Web.Cache;
 
 namespace RockWebCore.BlockTypes
 {
+    [LegacyBlock( "~/Blocks/Cms/PageMenu.ascx" )]
     public class PageMenu : RockBlockBase
     {
         private static readonly string ROOT_PAGE = "RootPage";

@@ -8,7 +8,6 @@ using AngleSharp.Html.Dom;
 using AngleSharp.Html.Parser;
 
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 using RockWebCore.Html;
 
@@ -29,7 +28,8 @@ namespace RockWebCore
                 { "CurrentPage", rockPage }
             };
 
-            var themeFilename = $"wwwroot/Themes/{layout.Site.Theme}/Layouts/Master.lava";
+            var themeFilename = $"wwwroot/Themes/{layout.Site.Theme}/Layouts/{layout.FileName}.lava";
+
             var layoutContent = await File.ReadAllTextAsync( themeFilename );
 
             var resolveTask = layoutContent.ResolveMergeFieldsAsync( mergeFields );

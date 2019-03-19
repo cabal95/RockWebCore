@@ -1,12 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Fluid;
+using Fluid.Ast;
+using Fluid.Tags;
 using Fluid.Values;
 
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+using RockWebCore.UI;
 
 namespace RockWebCore
 {
@@ -74,7 +78,10 @@ namespace RockWebCore
             //
             // Strip off the .liquid at the end of the path.
             //
-            subpath = subpath.Substring( 0, subpath.Length - 7 );
+            if ( subpath.EndsWith( ".liquid" ) )
+            {
+                subpath = subpath.Substring( 0, subpath.Length - 7 );
+            }
 
             if ( !subpath.EndsWith( ".lava" ) )
             {
@@ -92,6 +99,96 @@ namespace RockWebCore
         public IChangeToken Watch( string filter )
         {
             return _baseProvider.Watch( filter );
+        }
+    }
+
+    public class MasterPage : ExpressionBlock
+    {
+        public override async ValueTask<Completion> WriteToAsync( TextWriter writer, TextEncoder encoder, TemplateContext context, Expression expression, List<Statement> statements )
+        {
+            using ( var subWriter = new StringWriter() )
+            {
+                var completion = Completion.Normal;
+
+                for ( int i = 0; i < statements.Count; i++ )
+                {
+                    var statement = statements[i];
+
+                    completion = await statement.WriteToAsync( subWriter, encoder, context );
+
+                    if ( completion != Completion.Normal )
+                    {
+                        break;
+                    }
+                }
+
+                context.EnterChildScope();
+                context.SetValue( "ChildLayout", subWriter.ToString() );
+
+                //
+                // Find the lava file to use as the master page.
+                //
+                var relativePath = ( await expression.EvaluateAsync( context ) ).ToStringValue();
+                if ( !relativePath.EndsWith( ".lava", StringComparison.OrdinalIgnoreCase ) )
+                {
+                    relativePath += ".lava";
+                }
+
+                if ( relativePath.StartsWith( "~~" ) )
+                {
+                    var rockPage = context.GetValue( "CurrentPage" ).ToObjectValue() as RockPage;
+
+                    if ( rockPage != null )
+                    {
+                        relativePath = $"~/Themes/{rockPage.Site.Theme}" + relativePath.Substring( 2 );
+                    }
+                }
+
+                //
+                // Check if the file exists.
+                //
+                var fileProvider = context.FileProvider ?? TemplateContext.GlobalFileProvider;
+                var fileInfo = fileProvider.GetFileInfo( relativePath );
+
+                if ( !fileInfo.Exists )
+                {
+                    throw new FileNotFoundException( relativePath );
+                }
+
+                using ( var stream = fileInfo.CreateReadStream() )
+                {
+                    using ( var streamReader = new StreamReader( stream ) )
+                    {
+                        string partialTemplate = await streamReader.ReadToEndAsync();
+                        var parser = context.ParserFactory != null ? context.ParserFactory.CreateParser() : FluidTemplate.Factory.CreateParser();
+
+                        if ( parser.TryParse( partialTemplate, true, out var masterStatements, out var errors ) )
+                        {
+                            var template = context.TemplateFactory != null ? context.TemplateFactory() : new FluidTemplate();
+
+                            template.Statements = masterStatements;
+
+                            await template.RenderAsync( writer, encoder, context );
+                        }
+                        else
+                        {
+                            throw new Exception( String.Join( Environment.NewLine, errors ) );
+                        }
+                    }
+                }
+
+                context.ReleaseScope();
+            }
+
+            return Completion.Normal;
+        }
+    }
+
+    public class RockFluidTemplate : BaseFluidTemplate<RockFluidTemplate>
+    {
+        static RockFluidTemplate()
+        {
+            Factory.RegisterBlock<MasterPage>( "masterpage" );
         }
     }
 
@@ -114,7 +211,7 @@ namespace RockWebCore
 
         public static string ResolveMergeFields( this string s, Dictionary<string, object> mergeFields )
         {
-            var template = FluidTemplate.Parse( s );
+            var template = RockFluidTemplate.Parse( s );
             var context = new TemplateContext();
 
             foreach ( var f in mergeFields )
@@ -127,7 +224,7 @@ namespace RockWebCore
 
         public static async Task<string> ResolveMergeFieldsAsync( this string s, Dictionary<string, object> mergeFields )
         {
-            var template = FluidTemplate.Parse( s );
+            var template = RockFluidTemplate.Parse( s );
             var context = new TemplateContext();
 
             foreach ( var f in mergeFields )

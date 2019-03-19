@@ -1,4 +1,5 @@
-﻿        <!-- Start Content Area -->
+﻿{% masterpage '~~/Layouts/Master.lava' %}
+        <!-- Start Content Area -->
 
         <!-- Page Title -->
         <section id="secPageTitle" class="page-title" runat="server">
@@ -47,3 +48,4 @@
         </section>
 
         <!-- End Content Area -->
+{% endmasterpage %}

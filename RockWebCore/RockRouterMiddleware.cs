@@ -1,9 +1,18 @@
-﻿using System.Threading.Tasks;
+﻿using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+
+using Rock;
+using Rock.Data;
+using Rock.Model;
+using RockWebCore.UI;
 
 namespace RockWebCore
 {
@@ -25,25 +34,26 @@ namespace RockWebCore
         {
             var constraintResolver = _applicationBuilder.ApplicationServices.GetRequiredService<IInlineConstraintResolver>();
             var builder = new RouteBuilder( _applicationBuilder );
-            builder.Routes.Add( new Route(
-                new RouteHandler( CustomPageRoute ),
-                null,
-                "info",
-                new RouteValueDictionary( new { Id = 33 } ),
-                new RouteValueDictionary(),
-                new RouteValueDictionary(),
-                constraintResolver ) );
 
-            builder.Routes.Add( new Route(
-                new RouteHandler( CustomPageRoute ),
-                null,
-                "help",
-                new RouteValueDictionary( new { Id = 12 } ),
-                new RouteValueDictionary(),
-                new RouteValueDictionary(),
-                constraintResolver ) );
+            using ( var rockContext = new RockContext() )
+            {
+                var pageRouteService = new PageRouteService( rockContext );
 
-            builder.MapRoute( "/info/{id}", CustomPageRoute );
+                var routes = pageRouteService.Queryable()
+                    .Where( r => r.Page.SiteId == 1 );
+
+                foreach ( var route in routes )
+                {
+                    builder.Routes.Add( new Route(
+                        new RouteHandler( CustomPageRouteAsync ),
+                        null,
+                        route.Route,
+                        new RouteValueDictionary( new { InternalRoutePageId = route.PageId } ),
+                        new RouteValueDictionary(),
+                        new RouteValueDictionary(),
+                        constraintResolver ) );
+                }
+            }
 
             _router = builder.Build();
         }
@@ -66,11 +76,20 @@ namespace RockWebCore
             }
         }
 
-        private Task CustomPageRoute( HttpContext context )
+        private async Task CustomPageRouteAsync( HttpContext context )
         {
             var routeData = context.Features.Get<IRoutingFeature>();
+            int pageId = ( int ) routeData.RouteData.Values["InternalRoutePageId"];
 
-            return Task.CompletedTask;
+            context.Items["Rock:PageId"] = pageId;
+
+            var rockPage = new RockPage( pageId, context );
+
+            var response = await rockPage.RenderAsync();
+
+            var actionContext = new ActionContext( context, routeData.RouteData, new ActionDescriptor() );
+
+            await response.ExecuteResultAsync( actionContext );
         }
     }
 }

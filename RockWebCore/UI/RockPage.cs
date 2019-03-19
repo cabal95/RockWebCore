@@ -1,23 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
-using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
-using AngleSharp.Html.Parser;
 
 using Microsoft.AspNet.OData.Extensions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 using Rock;
+using Rock.Security;
 using Rock.Web.Cache;
-using RockWebCore.Html;
+
 using RockWebCore.Html.Elements;
+using RockWebCore.Html.Results;
 
 namespace RockWebCore.UI
 {
@@ -62,50 +61,40 @@ namespace RockWebCore.UI
         {
             get
             {
-                if ( _CurrentUser != null )
+                if ( _currentUser != null )
                 {
-                    return _CurrentUser;
+                    return _currentUser;
                 }
 
-                if ( Context.Items.ContainsKey( "CurrentUser" ) )
-                {
-                    _CurrentUser = Context.Items["CurrentUser"] as Rock.Model.UserLogin;
-                }
+                _currentUser = Context.GetCurrentUser();
 
-                if ( _CurrentUser == null )
+                if ( _currentUser == null )
                 {
-                    _CurrentUser = Rock.Model.UserLoginService.GetCurrentUser();
-                    if ( _CurrentUser != null )
+                    _currentUser = Rock.Model.UserLoginService.GetCurrentUser();
+                    if ( _currentUser != null )
                     {
-                        Context.Items.Add( "CurrentUser", _CurrentUser );
+                        Context.SetCurrentUser( _currentUser );
                     }
                 }
 
-                if ( _CurrentUser != null && _CurrentUser.Person != null && _currentPerson == null )
+                if ( _currentUser != null && _currentUser.Person != null && _currentPerson == null )
                 {
-                    CurrentPerson = _CurrentUser.Person;
+                    CurrentPerson = _currentUser.Person;
                 }
 
-                return _CurrentUser;
+                return _currentUser;
             }
 
             private set
             {
-                Context.Items.Remove( "CurrentUser" );
-                _CurrentUser = value;
+                _currentUser = value;
 
-                if ( _CurrentUser != null )
-                {
-                    Context.Items.Add( "CurrentUser", _CurrentUser );
-                    CurrentPerson = _CurrentUser.Person;
-                }
-                else
-                {
-                    CurrentPerson = null;
-                }
+                Context.SetCurrentUser( _currentUser );
+
+                CurrentPerson = _currentUser?.Person;
             }
         }
-        private Rock.Model.UserLogin _CurrentUser;
+        private Rock.Model.UserLogin _currentUser;
 
         /// <summary>
         /// Publicly gets the current <see cref="Rock.Model.Person"/>.  This is either the currently logged in user, or if the user
@@ -119,29 +108,18 @@ namespace RockWebCore.UI
         {
             get
             {
-                if ( _currentPerson != null )
+                if ( _currentPerson == null )
                 {
-                    return _currentPerson;
+                    _currentPerson = Context.GetCurrentPerson();
                 }
 
-                if ( _currentPerson == null && Context.Items.ContainsKey( "CurrentPerson" ) )
-                {
-                    _currentPerson = Context.Items["CurrentPerson"] as Rock.Model.Person;
-                    return _currentPerson;
-                }
-
-                return null;
+                return _currentPerson;
             }
 
             private set
             {
-                Context.Items.Remove( "CurrentPerson" );
-
                 _currentPerson = value;
-                if ( _currentPerson != null )
-                {
-                    Context.Items.Add( "CurrentPerson", value );
-                }
+                Context.SetCurrentPerson( _currentPerson );
             }
         }
         private Rock.Model.Person _currentPerson;
@@ -499,7 +477,7 @@ namespace RockWebCore.UI
         /// Renders the contents of each block and populates the ZoneContent property.
         /// </summary>
         /// <returns>A task that can be awaited.</returns>
-        protected async Task RenderAsync()
+        protected async Task RenderInternalAsync()
         {
             var content = new List<KeyValuePair<RockBlockElement, TextWriter>>();
 
@@ -536,8 +514,22 @@ namespace RockWebCore.UI
         /// </summary>
         /// <param name="stream">The stream to write the page contents to.</param>
         /// <returns>A task that can be awaited.</returns>
-        public async Task RenderAsync( Stream stream )
+        public async Task<IActionResult> RenderAsync()
         {
+            if ( !_pageCache.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                if ( CurrentPerson != null )
+                {
+                    return new ForbidResult();
+                }
+                else
+                {
+                    string url = Context.Request.Path + Context.Request.QueryString.Value;
+
+                    return new RedirectResult( $"/page/{Site.LoginPageId}?returnUrl={Uri.EscapeDataString(url)}" );
+                }
+            }
+
             FindZones();
 
             var preRenderTask = PreRenderAsync();
@@ -550,14 +542,11 @@ namespace RockWebCore.UI
 
             GenerateAdminFooter();
 
-            await RenderAsync();
+            await RenderInternalAsync();
 
             FinalizePageContent();
 
-            using ( var writer = new StreamWriter( stream, Encoding.UTF8, 4096, true ) )
-            {
-                await writer.WriteAsync( _layoutDocument.DocumentElement.OuterHtml );
-            }
+            return new HtmlObjectResult( _layoutDocument.DocumentElement.OuterHtml );
         }
 
         #endregion

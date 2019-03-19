@@ -1,29 +1,45 @@
-﻿using RockWebCore.BlockTypes;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+
+using RockWebCore.BlockTypes;
+using RockWebCore.DynamicRun;
 
 namespace RockWebCore
 {
     public static class BlockCacheExtensions
     {
+        private static AssemblyCollector AssemblyCollector = new AssemblyCollector( "wwwroot/Blocks", "*.cs", true );
+
         public static IBlockType GetMappedBlockType( this Rock.Web.Cache.BlockCache block )
         {
             var blockPath = block.BlockType.Path;
 
-            if ( blockPath == "~/Blocks/Cms/HtmlContentDetail.ascx" )
+            //
+            // Check dynamic compilation.
+            //
+            var type = AssemblyCollector.GetExportedTypesAsync().Result
+                .Where( t => typeof( IBlockType ).IsAssignableFrom( t ) )
+                .Where( t => t.GetCustomAttribute<LegacyBlockAttribute>()?.Path == blockPath )
+                .SingleOrDefault();
+
+            if ( type == null )
             {
-                return new HtmlContentDetail();
+                //
+                // Check against internal types.
+                //
+                type = typeof( BlockCacheExtensions ).Assembly.GetTypes()
+                    .Where( t => typeof( IBlockType ).IsAssignableFrom( t ) )
+                    .Where( t => t.GetCustomAttribute<LegacyBlockAttribute>()?.Path == blockPath )
+                    .SingleOrDefault();
             }
-            else if ( blockPath == "~/Blocks/Cms/PageMenu.ascx" )
+
+            if ( type != null )
             {
-                return new PageMenu();
+                return ( IBlockType ) Activator.CreateInstance( type );
             }
-            else if ( blockPath == "~/Blocks/Utility/DefinedTypeCheckList.ascx" )
-            {
-                return new DefinedTypeCheckList();
-            }
-            else
-            {
-                return new UnsupportedBlockType();
-            }
+
+            return new UnsupportedBlockType();
         }
     }
 }

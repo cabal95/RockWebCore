@@ -9,13 +9,22 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 
     <script src="{{ '~/Scripts/modernizr.js' | ResolveRockUrl:true }}" ></script>
+	<script src="{{ '~/Scripts/Bundles/RockJQueryLatest.js' | ResolveRockUrl }}"></script>
+
+	<script>
+	Sys = {};
+	Sys.Application = {};
+	Sys.Application.add_load = function(fn) {
+		$(document).ready(fn());
+	};
+	</script>
 
     <!-- Included CSS Files -->
     <link rel="stylesheet" href="{{ '~/Themes/Rock/Styles/bootstrap.css' | ResolveRockUrl:true }}" />
 	<link rel="stylesheet" href="{{ '~/Themes/Rock/Styles/theme.css' | ResolveRockUrl:true }}" />
 	<link rel="stylesheet" href="{{ '~/Styles/developer.css' | ResolveRockUrl:true }}" />
 
-    <script src="<{{ '~/Scripts/bootstrap.min.js' | ResolveRockUrl:true }}" ></script>
+    <script src="{{ '~/Scripts/bootstrap.min.js' | ResolveRockUrl:true }}" ></script>
 
 </head>
 <body id="splash">
@@ -28,7 +37,7 @@
             </div>
 
             <div id="content-box" class="clearfix">
-                {{ CurrentPage.ZoneContent.Main }}
+                <rock:zone name="Main" />
             </div>
         </div>
 

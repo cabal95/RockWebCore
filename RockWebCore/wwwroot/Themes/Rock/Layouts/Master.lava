@@ -78,8 +78,7 @@
 
             <div id="content-wrapper">
                 <div class="main-content">
-					{% capture childLayout %}~/Themes/Rock/Layouts/{{ CurrentPage.Layout.Name | Replace: ' ','' }}.lava{% endcapture %}
-                    {% include childLayout %}
+					{{ ChildLayout }}
 
                     <div class="main-footer">
                         <rock:zone name="Footer" />
