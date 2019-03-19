@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -65,6 +65,11 @@ namespace RockWebCore
             services.AddOData();
 
             services.AddHttpContextAccessor();
+
+            services.AddLogging( config =>
+            {
+                config.ClearProviders();
+            } );
         }
 
         public void Configure( IApplicationBuilder app, IHostingEnvironment env )
