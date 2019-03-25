@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove=".gitignore" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Include="wwwroot\Blocks\Security\Login.cs" />
     <Compile Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.cs" />
   </ItemGroup>
