@@ -70,14 +70,10 @@ namespace RockWebCore
         {
             if ( templatePath != null && HttpContext.Current != null )
             {
-                if ( templatePath.StartsWith( "~~" ) &&
-                    HttpContext.Current.Items != null &&
-                    HttpContext.Current.Items.ContainsKey( "Rock:PageId" ) )
+                if ( templatePath.StartsWith( "~~" ) && RockRequestContext.Current?.CurrentPage != null )
                 {
-                    var rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
-                    if ( rockPage != null &&
-                        rockPage.Layout != null &&
-                        rockPage.Layout.Site != null )
+                    var rockPage = RockRequestContext.Current?.CurrentPage;
+                    if ( rockPage?.Layout?.Site != null )
                     {
                         templatePath = "~/Themes/" + rockPage.Layout.Site.Theme + ( templatePath.Length > 2 ? templatePath.Substring( 2 ) : string.Empty );
                     }

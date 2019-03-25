@@ -139,6 +139,7 @@ namespace RockWebCore.DynamicRun
                 "System.Runtime",
                 "netstandard",
                 "System.Private.CoreLib",
+                "System.Private.Uri",
                 "System.Collections",
                 "System.IO.FileSystem",
                 "System.Linq",

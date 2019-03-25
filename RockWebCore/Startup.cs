@@ -16,16 +16,34 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 using Rock.Rest;
-
+using Rock.Web.Cache;
 using RockWebCore.UI;
 
 namespace RockWebCore
 {
+    public class RockRequestContextMiddleware
+    {
+        RequestDelegate _next;
+
+        public RockRequestContextMiddleware( RequestDelegate next )
+        {
+            _next = next;
+        }
+
+        public async Task InvokeAsync( HttpContext context, RockRequestContext rockRequestContext )
+        {
+            RockRequestContext.Current = rockRequestContext;
+
+            await _next( context );
+        }
+    }
+
     public class Startup
     {
         public IConfiguration Configuration { get; private set; }
@@ -65,6 +83,8 @@ namespace RockWebCore
             services.AddOData();
 
             services.AddHttpContextAccessor();
+            services.TryAddSingleton<IRockContextFactory, DefaultRockContextFactory>();
+            services.TryAddScoped<RockRequestContext, RockRequestContext>();
 
             services.AddLogging( config =>
             {
@@ -79,10 +99,76 @@ namespace RockWebCore
                 app.UseDeveloperExceptionPage();
             }
 
+            DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            DotLiquid.Template.FileSystem = new LavaFileSystem();
+            DotLiquid.Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
+            DotLiquid.Template.RegisterSafeType( typeof( DBNull ), o => null );
+            DotLiquid.Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+
+            System.Web.HttpContext.Configure( app.ApplicationServices.GetRequiredService<IHttpContextAccessor>() );
+
+            app.UseRockBundles();
+            app.UseStaticFiles();
+
+            //
+            // Provides a single RockRequestContext to each request.
+            //
+            app.UseMiddleware<RockRequestContextMiddleware>();
+
+            app.UseAuthentication();
+
+            //
+            // Handles API key => user translation.
+            //
+            app.UseMiddleware<Rock.Rest.Filters.ApiKeyMiddleware>();
+
+            //
+            // Temporary hack until legacy parts switch to new RockRequestContext.
+            //
+            app.Use( async ( context, next ) =>
+            {
+                RockRequestContext.Current.SetLegacyValues();
+                await next();
+            } );
+
+            //
+            // Temporary, since we don't have a way to clear cache without restarting, clear
+            // cache before each reqeust.
+            //
+            app.Use( async ( context, next ) =>
+            {
+                if ( context.Request.Query.ContainsKey( "clearcache" ) )
+                {
+                    Rock.Web.Cache.RockCache.ClearAllCachedItems();
+                }
+
+                await next();
+            } );
+
+            var odataBuilder = new ODataConventionModelBuilder( app.ApplicationServices );
+
+            app.UseMvc( routeBuilder =>
+            {
+                routeBuilder.EnableDependencyInjection();
+            } );
+
+            app.UseMiddleware<RockRouterMiddleware>( app );
+
+            app.UseRockApi();
+
+            //new Rock.Data.RockContext().Database.Migrate();
+        }
+    }
+
+    public static class StartupExtensions
+    {
+        public static void UseRockBundles( this IApplicationBuilder app )
+        {
             var bundlingOptions = new BundlingOptions
             {
                 RequestPath = "/Scripts/Bundles"
             };
+
             app.UseBundling( bundlingOptions, bundles =>
             {
                 bundles.AddJs( "/RockJQueryLatest.js" )
@@ -124,71 +210,17 @@ namespace RockWebCore
                 bundles.AddJs( "/RockAdmin.js" )
                     .Include( "/Scripts/Rock/Admin/*.js" );
             } );
-
-            DotLiquid.Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-            DotLiquid.Template.FileSystem = new LavaFileSystem();
-            DotLiquid.Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
-            DotLiquid.Template.RegisterSafeType( typeof( DBNull ), o => null );
-            DotLiquid.Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-
-            System.Web.HttpContext.Configure( app.ApplicationServices.GetRequiredService<IHttpContextAccessor>() );
-
-            app.UseAuthentication();
-            app.UseMiddleware<Rock.Rest.Filters.ApiKeyMiddleware>();
-
-            app.Use( async ( context, next ) =>
-            {
-                if ( !string.IsNullOrEmpty( context.User?.Identity?.Name ) )
-                {
-                    var user = new Rock.Model.UserLoginService( new Rock.Data.RockContext() ).GetByUserName( context.User.Identity.Name );
-                    context.SetCurrentUser( user );
-                    context.SetCurrentPerson( user.Person );
-                }
-
-                await next();
-            } );
-
-            //
-            // Temporary, since we don't have a way to clear cache without restarting, clear
-            // cache before each reqeust.
-            //
-            app.Use( async ( context, next ) =>
-            {
-                if ( context.Request.Query.ContainsKey( "clearcache" ) )
-                {
-                    Rock.Web.Cache.RockCache.ClearAllCachedItems();
-                }
-
-                await next();
-            } );
-
-            var odataBuilder = new ODataConventionModelBuilder( app.ApplicationServices );
-
-            app.UseMvc( routeBuilder =>
-            {
-                routeBuilder.EnableDependencyInjection();
-            } );
-
-            app.UseMiddleware<RockRouterMiddleware>( app );
-
-            app.UseRockApi();
-
-            app.UseStaticFiles();
-
-            new Rock.Data.RockContext().Database.Migrate();
         }
     }
 
     public class MyApi : ControllerBase
     {
         [Microsoft.AspNetCore.Mvc.Route( "/page/{pageId}" )]
-        public async Task<IActionResult> GetPage( int pageId )
+        public async Task<IActionResult> GetPage( int pageId, [FromServices] RockRequestContext rockRequestContext )
         {
-            HttpContext.Items["Rock:PageId"] = pageId;
+            rockRequestContext.CurrentPage = new RockPage( PageCache.Get( pageId ), rockRequestContext );
 
-            var rockPage = new RockPage( pageId, HttpContext );
-
-            return await rockPage.RenderAsync();
+            return await rockRequestContext.CurrentPage.RenderAsync();
         }
     }
 }

@@ -136,7 +136,7 @@ namespace RockWebCore
 
                 if ( relativePath.StartsWith( "~~" ) )
                 {
-                    var rockPage = context.GetValue( "CurrentPage" ).ToObjectValue() as RockPage;
+                    var rockPage = RockRequestContext.Current?.CurrentPage;
 
                     if ( rockPage != null )
                     {

@@ -12,6 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using RockWebCore.UI;
 
 namespace RockWebCore
@@ -26,8 +27,6 @@ namespace RockWebCore
         {
             _next = next;
             _applicationBuilder = applicationBuilder;
-
-            RebuildRoutes();
         }
 
         public void RebuildRoutes()
@@ -62,6 +61,11 @@ namespace RockWebCore
         {
             var routeContext = new RouteContext( context );
 
+            if ( _router == null )
+            {
+                RebuildRoutes();
+            }
+
             await _router.RouteAsync( routeContext );
 
             if ( routeContext.Handler == null )
@@ -78,16 +82,14 @@ namespace RockWebCore
 
         private async Task CustomPageRouteAsync( HttpContext context )
         {
-            var routeData = context.Features.Get<IRoutingFeature>();
-            int pageId = ( int ) routeData.RouteData.Values["InternalRoutePageId"];
+            var routeData = context.GetRouteData();
+            int pageId = ( int ) routeData.Values["InternalRoutePageId"];
+            var rockRequestContext = context.RequestServices.GetRequiredService<RockRequestContext>();
 
-            context.Items["Rock:PageId"] = pageId;
+            rockRequestContext.CurrentPage = new RockPage( PageCache.Get( pageId ), rockRequestContext );
 
-            var rockPage = new RockPage( pageId, context );
-
-            var response = await rockPage.RenderAsync();
-
-            var actionContext = new ActionContext( context, routeData.RouteData, new ActionDescriptor() );
+            var actionContext = new ActionContext( context, routeData, new ActionDescriptor() );
+            var response = await rockRequestContext.CurrentPage.RenderAsync();
 
             await response.ExecuteResultAsync( actionContext );
         }

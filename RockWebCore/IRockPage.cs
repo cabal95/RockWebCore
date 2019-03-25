@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Threading.Tasks;
+
+using Microsoft.AspNetCore.Mvc;
 
 using Rock.Model;
 using Rock.Web.Cache;
@@ -8,6 +11,8 @@ namespace RockWebCore
     public interface IRockPage
     {
         int PageId { get; }
+
+        RockRequestContext Context { get; }
 
         LayoutCache Layout { get; }
     
@@ -24,5 +29,7 @@ namespace RockWebCore
         void AddCSSLink( string url, bool fingerprint = true );
 
         void RegisterStartupScript( Type type, string key, string script );
+
+        Task<IActionResult> RenderAsync();
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +49,7 @@ namespace RockWebCore.BlockTypes
         public override async Task RenderAsync( TextWriter writer )
         {
             string helpUrl = string.Empty;
-            string redirectUrl = System.Web.HttpContext.Current.Request.Query["returnUrl"];
+            string redirectUrl = Uri.UnescapeDataString( System.Web.HttpContext.Current.Request.Query["returnUrl"].FirstOrDefault() ?? string.Empty );
 
             if ( string.IsNullOrWhiteSpace( redirectUrl ) )
             {

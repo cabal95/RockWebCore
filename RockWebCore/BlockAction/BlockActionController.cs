@@ -43,7 +43,7 @@ namespace RockWebCore.BlockAction
         }
 
         [Route( "{blockId}/{actionName}")]
-        public async Task<IActionResult> Postback( int blockId, string actionName, [FromBody] JToken parameters )
+        public async Task<IActionResult> Postback( int blockId, string actionName, [FromBody] JToken parameters, [FromServices] RockRequestContext rockRequestContext )
         {
             try
             {
@@ -52,7 +52,8 @@ namespace RockWebCore.BlockAction
 
                 block.Block = blockCache;
                 block.PageCache = blockCache.Page;
-                block.RockPage = new RockPage( blockCache.PageId.Value, HttpContext );
+                block.RockPage = new RockPage( PageCache.Get( blockCache.PageId.Value ), rockRequestContext );
+                rockRequestContext.CurrentPage = block.RockPage;
 
                 if ( !( block is IAsyncActionBlock actionBlock ) )
                 {

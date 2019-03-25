@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 
 using Rock.Model;
 using Rock.Web.Cache;
@@ -47,16 +46,33 @@ namespace RockWebCore.BlockTypes
 
         #region Block Support Methods
 
+        /// <summary>
+        /// Gets the attribute value.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
         public virtual string GetAttributeValue( string key )
         {
             return Block.GetAttributeValue( key );
         }
 
+        /// <summary>
+        /// Determines whether the user is authorized for the specified action.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns>
+        ///   <c>true</c> if the user is authorized for the specified action; otherwise, <c>false</c>.
+        /// </returns>
         public virtual bool IsUserAuthorized( string action )
         {
             return Block.IsAuthorized( action, CurrentPerson );
         }
 
+        /// <summary>
+        /// Resolves the rock URL.
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
         public string ResolveRockUrl( string url )
         {
             return RockPage.ResolveRockUrl( url );
@@ -65,25 +81,11 @@ namespace RockWebCore.BlockTypes
         /// <summary>
         /// Checks various page parameters and returns the match.
         /// </summary>
-        /// <param name="key">The key whose value is wanted.</param>
+        /// <param name="name">The parameter name whose value is wanted.</param>
         /// <returns></returns>
-        public string PageParameter( string key )
+        public string PageParameter( string name )
         {
-            var context = System.Web.HttpContext.Current;
-            var routeData = context.GetRouteData();
-
-            if ( routeData.Values.Keys.Any( k => k.ToLowerInvariant() == key.ToLowerInvariant() ) )
-            {
-                return routeData.Values[routeData.Values.Keys.First( k => k.ToLowerInvariant() == key.ToLowerInvariant() )].ToString();
-            }
-            else if ( context.Request.Query.Keys.Any( k => k.ToLowerInvariant() == key.ToLowerInvariant() ) )
-            {
-                return context.Request.Query[context.Request.Query.Keys.First( k => k.ToLowerInvariant() == key.ToLowerInvariant() )];
-            }
-            else
-            {
-                return null;
-            }
+            return RockPage.Context.PageParameter( name );
         }
 
         #endregion
