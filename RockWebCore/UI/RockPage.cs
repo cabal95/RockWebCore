@@ -311,7 +311,7 @@ namespace RockWebCore.UI
                     buttonBar.AppendChild( aPageSecurity );
 
                     // ShorLink Properties
-                    var aShortLink = ModalIconLinkElement( "Add Short Link", "btn properties", "fa fa-link", ResolveRockUrl( $"~/ShortLink/{PageId}?t=Shortened Link&url={Context.RequestUrl}" ) );
+                    var aShortLink = ModalIconLinkElement( "Add Short Link", "btn properties", "fa fa-link", ResolveRockUrl( $"~/ShortLink/{PageId}?t=Shortened Link&url={Context.RawUrl}" ) );
                     aShortLink.SetAttribute( "id", "aShortLink" );
                     buttonBar.AppendChild( aShortLink );
 

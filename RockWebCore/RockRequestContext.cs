@@ -99,7 +99,7 @@ namespace RockWebCore
         private readonly IRockContextFactory _rockContextFactory;
 
         /// <summary>
-        /// The rock context used internally.
+        /// The rock context used internally by this object.
         /// </summary>
         private readonly RockContext _rockContext;
 
@@ -113,7 +113,7 @@ namespace RockWebCore
         /// <value>
         /// The request full URL including scheme and query string.
         /// </value>
-        public virtual string RequestUrl
+        public virtual string RawUrl
         {
             get
             {

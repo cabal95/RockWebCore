@@ -22,7 +22,7 @@ namespace RockWebCore
 
             if ( string.IsNullOrWhiteSpace( returnUrl ) )
             {
-                returnUrl = Uri.EscapeDataString( PersonToken.RemoveRockMagicToken( context.RequestUrl ) );
+                returnUrl = Uri.EscapeDataString( PersonToken.RemoveRockMagicToken( context.RawUrl ) );
             }
 
             return returnUrl;

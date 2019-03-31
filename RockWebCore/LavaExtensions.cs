@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Fluid;
@@ -198,10 +199,86 @@ namespace RockWebCore
         {
             TemplateContext.GlobalFilters.AddFilter( "ResolveRockUrl", ResolveRockUrl );
             TemplateContext.GlobalFilters.AddFilter( "ReadFile", ReadFile );
-            TemplateContext.GlobalFilters.AddFilter( "Replace", Fluid.Filters.StringFilters.Replace );
+            RegisterLegacyFilters( typeof( Rock.Lava.RockFilters ) );
 
             TemplateContext.GlobalMemberAccessStrategy = new RockMemberAccessStrategy();
             TemplateContext.GlobalFileProvider = new RockLavaFileProvider();
+        }
+
+        /// <summary>
+        /// Registers the legacy filters.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        public static void RegisterLegacyFilters( Type type )
+        {
+            var methods = type.GetMethods( System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public );
+
+            foreach ( var method in methods )
+            {
+                var parameters = method.GetParameters();
+
+                FluidValue LegacyFilter( FluidValue input, FilterArguments arguments, TemplateContext context )
+                {
+                    var p = new object[parameters.Length];
+
+                    for ( int i = 0; i < parameters.Length; i++ )
+                    {
+                        FluidValue arg = null;
+
+                        if ( i == 0 )
+                        {
+                            arg = input;
+                        }
+                        else if ( arguments.Count > (i-1) )
+                        {
+                            arg = arguments.At( i - 1 );
+                        }
+
+                        if ( arg == null && parameters[i].IsOptional )
+                        {
+                            p[i] = parameters[i].DefaultValue;
+                        }
+                        else
+                        {
+                            if ( parameters[i].ParameterType == typeof( string ) )
+                            {
+                                p[i] = arg.ToStringValue();
+                            }
+                            else if ( parameters[i].ParameterType == typeof( int ) )
+                            {
+                                p[i] = ( int ) arg.ToNumberValue();
+                            }
+                            else if ( parameters[i].ParameterType == typeof( bool ) )
+                            {
+                                p[i] = arg.ToBooleanValue();
+                            }
+                            else if ( parameters[i].ParameterType == typeof( object ) )
+                            {
+                                p[i] = arg.ToObjectValue();
+                            }
+                            else
+                            {
+                                throw new ArgumentOutOfRangeException( parameters[i].Name, $"Parameter type '{parameters[i].ParameterType.Name}' is not supported for legacy filters." );
+                            }
+                        }
+                    }
+
+                    var result = method.Invoke( null, p );
+
+                    return FluidValue.Create( result );
+                }
+
+
+                //
+                // Skip any filters that require the DotLiquid context.
+                //
+                if ( parameters.Length >= 1 && parameters[0].ParameterType.FullName == "DotLiquid.Context" )
+                {
+                    continue;
+                }
+
+                TemplateContext.GlobalFilters.AddFilter( method.Name, LegacyFilter );
+            }
         }
 
         public static string ResolveMergeFields( this string s )
@@ -244,6 +321,13 @@ namespace RockWebCore
             return FluidValue.Create( url != string.Empty ? url : "/" );
         }
 
+        /// <summary>
+        /// Reads the file, this is a hack and is used by the Splash template to include the Rock SVG.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="arguments">The arguments.</param>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
         public static FluidValue ReadFile( FluidValue input, FilterArguments arguments, TemplateContext context )
         {
             var path = input.ToStringValue().Replace( "~~", "wwwroot/Themes/Rock" ).Replace( "~", "wwwroot" );
