@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Migrations.Core", "..\
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{42516940-92E3-421F-AD89-50E8F47B615C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{F02A26C7-A0A3-47A7-A27D-ACABCDFE68E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F02A26C7-A0A3-47A7-A27D-ACABCDFE68E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F02A26C7-A0A3-47A7-A27D-ACABCDFE68E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
