@@ -1,36 +1,41 @@
-﻿using System.IO;
-
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
 using Jurassic;
 using Jurassic.Library;
 
 using Newtonsoft.Json;
 
+using Rock.TypeScript.Internal;
+
 namespace Rock.TypeScript
 {
-    public class TypeScriptCompiler
+    /// <summary>
+    /// Implements the native TypeScript compiler that is written in JavaScript.
+    /// The ScriptEngine cannot move between threads, so create one background thread
+    /// to handle compilation.
+    /// </summary>
+    /// <seealso cref="Rock.TypeScript.ITypeScriptCompiler" />
+    public class TypeScriptCompiler : ITypeScriptCompiler
     {
-        #region Properties
+        #region Static Fields
 
-        /// <summary>
-        /// The script engine that will be handling our compile requests.
-        /// </summary>
-        private ScriptEngine JSEngine { get; set; }
+        private static readonly Queue<CompileRequest> _sharedQueue = new Queue<CompileRequest>();
 
-        /// <summary>
-        /// <c>true</c> if the engine has been initialized, <c>false</c> otherwise.
-        /// </summary>
-        protected bool IsInitialized { get; set; }
+        private static readonly AutoResetEvent _sharedQueueEvent = new AutoResetEvent( false );
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="T:Rock.TypeScript.TypeScriptCompiler"/> class.
+        /// Initializes the <see cref="TypeScriptCompiler"/> class.
         /// </summary>
-        public TypeScriptCompiler()
+        static TypeScriptCompiler()
         {
-            JSEngine = new ScriptEngine();
+            new Thread( QueueThread ).Start();
         }
 
         #endregion
@@ -38,35 +43,68 @@ namespace Rock.TypeScript
         #region Methods
 
         /// <summary>
-        /// Initializes the engine if it's needed, otherwise does nothing.
+        /// Background thread to handle TypeScript compilation.
         /// </summary>
-        protected virtual void InitializeEngineIfNeeded()
+        private static void QueueThread()
         {
-            lock ( this )
+            var engine = new ScriptEngine();
+            InitializeEngine( engine );
+
+            while ( true )
             {
-                if ( IsInitialized )
+                if ( !_sharedQueue.TryDequeue( out var request ) )
                 {
-                    return;
+                    _sharedQueueEvent.WaitOne();
+                    continue;
                 }
 
-                var tsStream = GetType().Assembly.GetManifestResourceStream( "TestApp.typescript.js" );
-                var tsScript = ReadStream( tsStream );
+                System.Diagnostics.Debug.WriteLine( "Compiling..." );
+                var jsobject = ( ObjectInstance ) engine.CallGlobalFunction( "tsCompile", new[] { request.SourceCode, request.FileName, JsonConvert.SerializeObject( request.Options ) } );
 
-                JSEngine.Execute( tsScript );
+                var result = jsobject.Cast<CompileResult>();
 
-                string compilerHelper = @"
-function tsCompile(source, options)
+                var module = new CompiledModule
+                {
+                    FileName = request.FileName,
+                    Success = !result.Diagnostics.Any( d => d.Category == Category.Error ),
+                    Messages = result.Diagnostics.Select( d => $"{d.Code}:{d.MessageText}" )
+                };
+
+                if ( module.Success )
+                {
+                    module.SourceCode = result.OutputText;
+                    module.SourceMap = result.SourceMapText;
+                }
+                System.Diagnostics.Debug.WriteLine( "Done..." );
+
+                request.CompiledModule = module;
+                request.WaitHandle.Set();
+            }
+        }
+
+        /// <summary>
+        /// Initializes the engine.
+        /// </summary>
+        /// <param name="engine">The engine.</param>
+        private static void InitializeEngine( ScriptEngine engine )
+        {
+            var streamName = typeof( TypeScriptCompiler ).Assembly.GetManifestResourceNames().Single( n => n.EndsWith( ".TypeScript.typescript.js" ) );
+            var tsStream = typeof( TypeScriptCompiler ).Assembly.GetManifestResourceStream( streamName );
+            var tsScript = ReadStream( tsStream );
+
+            engine.Execute( tsScript );
+
+            string compilerHelper = @"
+function tsCompile(source, fileName, options)
 {
     return ts.transpileModule(source, {
+        fileName: fileName,
         compilerOptions: JSON.parse(options),
         reportDiagnostics: true
     });
 }
 ";
-                JSEngine.Execute( compilerHelper );
-
-                IsInitialized = true;
-            }
+            engine.Execute( compilerHelper );
         }
 
         /// <summary>
@@ -83,19 +121,27 @@ function tsCompile(source, options)
         }
 
         /// <summary>
+        /// Gets the default compiler options.
+        /// </summary>
+        /// <returns>A new CompileOptions instance that contains the default options.</returns>
+        public virtual CompileOptions GetDefaultOptions()
+        {
+            return new CompileOptions
+            {
+                Target = LanguageVersion.ES5,
+                Module = ModuleType.AMD,
+                SourceMap = true
+            };
+        }
+
+        /// <summary>
         /// Compiles the given TypeScript source into pure JavaScript.
         /// </summary>
         /// <param name="source">The typescript source code to be compiled.</param>
         /// <returns>The results of the compilation.</returns>
-        public virtual CompileResult Compile( string source )
+        public virtual CompiledModule Compile( string source )
         {
-            var options = new CompileOptions
-            {
-                Target = Target.ES5,
-                Module = ModuleType.AMD
-            };
-
-            return Compile( source, options );
+            return Compile( source, GetDefaultOptions() );
         }
 
         /// <summary>
@@ -104,18 +150,80 @@ function tsCompile(source, options)
         /// <param name="source">The typescript source code to be compiled.</param>
         /// <param name="options">The options to use when compiling.</param>
         /// <returns>The results of the compilation.</returns>
-        public virtual CompileResult Compile( string source, CompileOptions options )
+        public virtual CompiledModule Compile( string source, CompileOptions options )
         {
-            InitializeEngineIfNeeded();
+            return Compile( source, "module.ts", options );
+        }
 
-            lock ( this )
+        /// <summary>
+        /// Compiles the given TypeScript source into pure JavaScript.
+        /// </summary>
+        /// <param name="source">The typescript source code to be compiled.</param>
+        /// <param name="fileName">The filename that represents this source code.</param>
+        /// <param name="options">The options to use when compiling.</param>
+        /// <returns>The results of the compilation.</returns>
+        public virtual CompiledModule Compile( string source, string fileName, CompileOptions options )
+        {
+            var request = new CompileRequest
             {
-                var jsobject = ( ObjectInstance ) JSEngine.CallGlobalFunction( "tsCompile", new[] { source, JsonConvert.SerializeObject( options ) } );
+                SourceCode = source,
+                FileName = fileName,
+                Options = options
+            };
 
-                return jsobject.Cast<CompileResult>();
+            _sharedQueue.Enqueue( request );
+            _sharedQueueEvent.Set();
+
+            if ( !request.WaitHandle.WaitOne( 15000 ) )
+            {
+                return new CompiledModule
+                {
+                    FileName = fileName,
+                    Success = false,
+                    Messages = new[] { "Timeout waiting for compilation to complete." }
+                };
             }
+
+            return request.CompiledModule;
+        }
+
+        /// <summary>
+        /// Compiles the TypeScript file into a JavaScript module.
+        /// </summary>
+        /// <param name="filePath">The file path that contains the TypeScript code.</param>
+        /// <returns>The results of the compilation.</returns>
+        public virtual CompiledModule CompileFile( string filePath )
+        {
+            return CompileFile( filePath, GetDefaultOptions() );
+        }
+
+        /// <summary>
+        /// Compiles the TypeScript file into a JavaScript module.
+        /// </summary>
+        /// <param name="filePath">The file path that contains the TypeScript code.</param>
+        /// <param name="options">The options to use when compiling.</param>
+        /// <returns>The results of the compilation.</returns>
+        public virtual CompiledModule CompileFile( string filePath, CompileOptions options )
+        {
+            string tsSource = File.ReadAllText( filePath );
+            var filename = Path.GetFileName( filePath );
+
+            return Compile( tsSource, filename, options );
         }
 
         #endregion
+
+        private class CompileRequest
+        {
+            public ManualResetEvent WaitHandle { get; } = new ManualResetEvent( false );
+
+            public string SourceCode { get; set; }
+
+            public string FileName { get; set; }
+
+            public CompileOptions Options { get; set; }
+
+            public CompiledModule CompiledModule { get; set; }
+        }
     }
 }
