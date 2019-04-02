@@ -23,7 +23,7 @@ namespace RockWebCore.Html.Elements
         {
             var zone = this.ParentElement as RockZoneElement;
 
-            writer.Write( $"<div id=\"bid_{Block.BlockId}\" data-zone-location=\"{zone.Name}\" class=\"block-instance\"><div class=\"block-content\">" );
+            writer.Write( $"<div id=\"bid_{Block.BlockId}\" data-zone-location=\"{zone.Name}\" class=\"block-instance {Block.Block.Name.ToLowerInvariant().Replace( ' ', '-' )}\"><div class=\"block-content\">" );
 
             writer.Write( Content );
 

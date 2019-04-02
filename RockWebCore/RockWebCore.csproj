@@ -16,6 +16,7 @@
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
+    <Content Remove="wwwroot\Scripts\RockControls.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -62,5 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="wwwroot\Blocks\Security\Login.vue.ts" />
+    <TypeScriptCompile Include="wwwroot\Scripts\RockControls.ts" />
   </ItemGroup>
 </Project>
