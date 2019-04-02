@@ -77,6 +77,8 @@ namespace RockWebCore
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseDynamicTypeScriptCompiler();
+
             //
             // Legacy support to HttpContext.Current.
             //
