@@ -21,7 +21,6 @@ namespace RockWebCore.BlockTypes
         {
             await base.PreRenderAsync();
 
-            RockPage.AddScriptLink( "https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.9/vue.min.js", false );
         }
 
         protected List<Item> GetItemList()
@@ -72,34 +71,20 @@ namespace RockWebCore.BlockTypes
 
         protected virtual async Task RegisterVueApp( TextWriter writer, string path, object dataParameters )
         {
-            var appId = $"vueapp_{BlockId}";
-            var importRegex = new System.Text.RegularExpressions.Regex( "import +([^ ]+) +from +'([^']+)'" );
-            var script = File.ReadAllText( path + ".js" );
-
-            script = importRegex.Replace( script, ( match ) =>
-            {
-                return $"var {match.Groups[1].Value} = {ImportComponent( match.Groups[2].Value )};";
-            } );
-
-            script = script.Replace( "$$data$$", dataParameters.ToJson() ).Replace( "$$id$$", appId );
+            var script = $@"require.config({{baseUrl:'/'}});require(['{path.Substring( 8 )}'], function (app) {{
+    new app.default('bid_{BlockId}', {Newtonsoft.Json.JsonConvert.SerializeObject( dataParameters )});
+}});";
 
             RockPage.RegisterStartupScript( GetType(), $"VueApp-{BlockId}", script );
 
-            await writer.WriteLineAsync( File.ReadAllText( path ).Replace( "$$id$$", appId ) );
-        }
-
-        protected virtual string ImportComponent( string path )
-        {
-            var js = File.ReadAllText( $"{path}.js" );
-            var templateLines = File.ReadAllLines( path );
-
-            var template = string.Join( " +\n", templateLines.Select( s => s.ToJson() ) );
-
-            return js.Replace( "$$template$$", template ).Trim().TrimEnd( ';' );
+            writer.WriteLine( $"<div id=\"bid_{BlockId}\">" );
+            await writer.WriteLineAsync( await File.ReadAllTextAsync( path + ".vue" ) );
+            writer.WriteLine( "</div>" );
         }
 
         public override async Task RenderAsync( TextWriter writer )
         {
+            RockPage.AddScriptLink( "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js", false );
             // Should content be hidden when empty list
             bool hideBlockWhenEmpty = GetAttributeValue( "HideBlockWhenEmpty" ).AsBoolean();
 
@@ -110,7 +95,7 @@ namespace RockWebCore.BlockTypes
                 return;
             }
 
-            await RegisterVueApp( writer, "wwwroot/Blocks/Utility/DefinedTypeCheckList.vue", new
+            await RegisterVueApp( writer, "wwwroot/Blocks/Utility/DefinedTypeCheckList", new
             {
                 BlockId = BlockId,
                 Items = items,

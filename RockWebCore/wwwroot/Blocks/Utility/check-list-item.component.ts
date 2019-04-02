@@ -1,4 +1,6 @@
-﻿<div v-if="!hideSelected || !item.Selected">
+﻿export const CheckListItem = {
+    props: ['item', 'hideSelected'],
+    template: `<div v-if="!hideSelected || !item.Selected">
     <div class="panel panel-default checklist-item">
         <header class="panel-heading clearfix">
             <input type="checkbox" v-bind:checked="item.Selected" v-on:input="onSelected($event)">
@@ -13,3 +15,16 @@
         </div>
     </div>
 </div>
+`,
+    data: function () {
+        return {
+            detailsVisible: false
+        };
+    },
+    methods: {
+        onSelected: function (event) {
+            this.item.Selected = event.target.checked;
+            this.$emit('set-state', this.item);
+        }
+    }
+};

@@ -62,6 +62,7 @@ namespace RockWebCore
             services.AddHttpContextAccessor();
             services.TryAddSingleton<IRockContextFactory, DefaultRockContextFactory>();
             services.TryAddScoped<RockRequestContext, RockRequestContext>();
+            services.TryAddSingleton<Rock.TypeScript.ITypeScriptCompiler, Rock.TypeScript.JurassicTypeScriptCompiler>();
 
             services.AddLogging( config =>
             {
