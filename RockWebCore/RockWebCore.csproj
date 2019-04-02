@@ -10,10 +10,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Remove="wwwroot\Blocks\Security\Login.cs" />
+    <Content Remove="wwwroot\Blocks\Security\Login.vue.cs" />
+    <Content Remove="wwwroot\Blocks\Security\Login.vue.ts" />
     <Content Remove="wwwroot\Blocks\Utility\check-list-item.component.ts" />
-    <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.cs" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
+    <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
   </ItemGroup>
 
@@ -23,12 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="wwwroot\Blocks\Security\Login.cs" />
-    <Compile Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.cs" />
+    <Compile Include="wwwroot\Blocks\Security\Login.vue.cs" />
+    <Compile Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.cs" />
+    <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
     <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
     <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
   </ItemGroup>
@@ -58,5 +59,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="wwwroot\Blocks\Utility\check-list-item.component.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\Blocks\Security\Login.vue.ts" />
   </ItemGroup>
 </Project>
