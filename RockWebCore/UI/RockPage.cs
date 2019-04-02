@@ -406,7 +406,7 @@ namespace RockWebCore.UI
             {
                 var zone = GetZoneForBlock( b );
                 var blockWrapper = ( RockBlockElement ) LayoutDocument.CreateElement( "rock:block" );
-                blockWrapper.Block = b.GetMappedBlockType();
+                blockWrapper.Block = b.GetMappedBlockType( Context.HttpContext.RequestServices );
                 blockWrapper.Block.Block = b;
                 blockWrapper.Block.RockPage = this;
                 blockWrapper.Block.PageCache = PageCache;

@@ -20,7 +20,7 @@ namespace RockWebCore.BlockAction
         {
             try
             {
-                var block = BlockCache.Get( blockId ).GetMappedBlockType();
+                var block = BlockCache.Get( blockId ).GetMappedBlockType( HttpContext.RequestServices );
 
                 if ( !( block is IAsyncActionBlock actionBlock ) )
                 {
@@ -48,7 +48,7 @@ namespace RockWebCore.BlockAction
             try
             {
                 var blockCache = BlockCache.Get( blockId );
-                var block = blockCache.GetMappedBlockType();
+                var block = blockCache.GetMappedBlockType( HttpContext.RequestServices );
 
                 block.Block = blockCache;
                 block.PageCache = blockCache.Page;

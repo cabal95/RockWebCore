@@ -24,20 +24,20 @@ namespace Microsoft.AspNetCore.Builder
                 bundles.AddJs( "/RockLibs.js" )
                 .Include( "/Scripts/jquery-ui-1.10.4.custom.min.js" )
                 .Include( "/Scripts/bootstrap.min.js" )
-                .Include( "/Scripts/bootstrap-timepicker.js" )
-                .Include( "/Scripts/bootstrap-datepicker.js" )
+                //.Include( "/Scripts/bootstrap-timepicker.js" )
+                //.Include( "/Scripts/bootstrap-datepicker.js" )
                 .Include( "/Scripts/bootstrap-limit.js" )
                 .Include( "/Scripts/bootstrap-modalmanager.js" )
                 .Include( "/Scripts/bootstrap-modal.js" )
                 .Include( "/Scripts/bootbox.min.js" )
                 .Include( "/Scripts/chosen.jquery.min.js" )
                 .Include( "/Scripts/typeahead.min.js" )
-                .Include( "/Scripts/jquery.fileupload.js" )
+                //.Include( "/Scripts/jquery.fileupload.js" )
                 .Include( "/Scripts/jquery.stickytableheaders.js" )
-                .Include( "/Scripts/iscroll.js" )
+                //.Include( "/Scripts/iscroll.js" )
                 .Include( "/Scripts/jcrop.min.js" )
                 .Include( "/Scripts/ResizeSensor.js" )
-                .Include( "/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js" )
+                //.Include( "/Scripts/ion.rangeSlider/js/ion-rangeSlider/ion.rangeSlider.min.js" )
                 .Include( "/Scripts/Rock/Extensions/*.js" );
 
                 bundles.AddJs( "/RockUi.js" )
@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Builder
                     .Include( "/Scripts/Rock/settings.js" )
                     .Include( "/Scripts/Rock/utility.js" )
                     .Include( "/Scripts/Rock/Controls/*.js" )
+                    .Exclude( "/Scripts/Rock/Controls/bootstrap-colorpicker.min.js" )
                     .Include( "/Scripts/Rock/reportingInclude.js" );
 
                 bundles.AddJs( "/RockValidation.js" )

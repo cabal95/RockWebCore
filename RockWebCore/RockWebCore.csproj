@@ -13,8 +13,8 @@
     <Content Remove="wwwroot\Blocks\Security\Login.cs" />
     <Content Remove="wwwroot\Blocks\Utility\check-list-item.component.ts" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.cs" />
-    <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.ts" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
+    <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +30,7 @@
   <ItemGroup>
     <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.cs" />
     <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
-    <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.ts" />
+    <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
   </ItemGroup>
 
   <ItemGroup>

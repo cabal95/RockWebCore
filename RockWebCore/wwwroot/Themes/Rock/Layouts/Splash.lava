@@ -10,6 +10,7 @@
 
     <script src="{{ '~/Scripts/modernizr.js' | ResolveRockUrl:true }}" ></script>
 	<script src="{{ '~/Scripts/Bundles/RockJQueryLatest.js' | ResolveRockUrl }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
 	<script>
 	Sys = {};
@@ -18,6 +19,11 @@
 		$(document).ready(fn());
 	};
 	</script>
+    <script>
+        require.config({
+            baseUrl:'/'
+        });
+    </script>
 
     <!-- Included CSS Files -->
     <link rel="stylesheet" href="{{ '~/Themes/Rock/Styles/bootstrap.css' | ResolveRockUrl:true }}" />

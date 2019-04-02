@@ -5,37 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Rock;
+using RockWebCore.UI;
 
 namespace RockWebCore.BlockTypes
 {
     [LegacyBlock( "~/Blocks/Security/Login.ascx" )]
-    public class Login : RockBlockBase
+    public class Login : VueBlock
     {
-        public override async Task PreRenderAsync()
-        {
-            await base.PreRenderAsync();
-
-            RockPage.AddScriptLink( "https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.9/vue.min.js", false );
-        }
-
-        protected virtual async Task RegisterVueApp( TextWriter writer, string path, object dataParameters )
-        {
-            var appId = $"vueapp_{BlockId}";
-            var importRegex = new System.Text.RegularExpressions.Regex( "import +([^ ]+) +from +'([^']+)'" );
-            var script = File.ReadAllText( path + ".js" );
-
-            script = importRegex.Replace( script, ( match ) =>
-            {
-                return $"var {match.Groups[1].Value} = {ImportComponent( match.Groups[2].Value )};";
-            } );
-
-            script = script.Replace( "$$data$$", dataParameters.ToJson() ).Replace( "$$id$$", appId );
-
-            RockPage.RegisterStartupScript( GetType(), $"VueApp-{BlockId}", script );
-
-            await writer.WriteLineAsync( File.ReadAllText( path ).Replace( "$$id$$", appId ) );
-        }
-
         protected virtual string ImportComponent( string path )
         {
             var js = File.ReadAllText( $"{path}.js" );
@@ -76,7 +52,7 @@ namespace RockWebCore.BlockTypes
                 { "HelpPage", helpUrl }
             };
 
-            await RegisterVueApp( writer, "wwwroot/Blocks/Security/Login.vue", new
+            await RegisterVueApp( writer, "Blocks/Security/Login.vue", new
             {
                 BlockId = BlockId,
                 PromptMessage = GetAttributeValue( "PromptMessage" ),

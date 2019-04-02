@@ -12,17 +12,49 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
-namespace RockWebCore.BlockTypes
+using RockWebCore.BlockTypes;
+
+namespace RockWebCore.UI
 {
     [LegacyBlock( "~/Blocks/Utility/DefinedTypeCheckList.ascx" )]
-    public class DefinedTypeCheckList : RockBlockBase
+    public class DefinedTypeCheckList : VueBlock
     {
-        public override async Task PreRenderAsync()
-        {
-            await base.PreRenderAsync();
+        #region Base Method Overrides
 
+        /// <summary>
+        /// Renders the asynchronous content.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        /// <returns></returns>
+        public override async Task RenderAsync( TextWriter writer )
+        {
+            // Should content be hidden when empty list
+            bool hideBlockWhenEmpty = GetAttributeValue( "HideBlockWhenEmpty" ).AsBoolean();
+
+            var items = GetItemList();
+
+            if ( !items.Any() && hideBlockWhenEmpty )
+            {
+                return;
+            }
+
+            await RegisterVueApp( writer, "Blocks/Utility/DefinedTypeCheckList.vue", new
+            {
+                BlockId,
+                Items = items,
+                Title = GetAttributeValue( "ChecklistTitle" ),
+                Description = GetAttributeValue( "ChecklistDescription" )
+            } );
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the item list.
+        /// </summary>
+        /// <returns></returns>
         protected List<Item> GetItemList()
         {
             var attributeKey = GetAttributeValue( "AttributeKey" );
@@ -69,41 +101,16 @@ namespace RockWebCore.BlockTypes
             return new List<Item>();
         }
 
-        protected virtual async Task RegisterVueApp( TextWriter writer, string path, object dataParameters )
-        {
-            var script = $@"require.config({{baseUrl:'/'}});require(['{path.Substring( 8 )}'], function (app) {{
-    new app.default('bid_{BlockId}', {Newtonsoft.Json.JsonConvert.SerializeObject( dataParameters )});
-}});";
+        #endregion
 
-            RockPage.RegisterStartupScript( GetType(), $"VueApp-{BlockId}", script );
+        #region Actions
 
-            writer.WriteLine( $"<div id=\"bid_{BlockId}\">" );
-            await writer.WriteLineAsync( await File.ReadAllTextAsync( path + ".vue" ) );
-            writer.WriteLine( "</div>" );
-        }
-
-        public override async Task RenderAsync( TextWriter writer )
-        {
-            RockPage.AddScriptLink( "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js", false );
-            // Should content be hidden when empty list
-            bool hideBlockWhenEmpty = GetAttributeValue( "HideBlockWhenEmpty" ).AsBoolean();
-
-            var items = GetItemList();
-
-            if ( !items.Any() && hideBlockWhenEmpty )
-            {
-                return;
-            }
-
-            await RegisterVueApp( writer, "wwwroot/Blocks/Utility/DefinedTypeCheckList", new
-            {
-                BlockId = BlockId,
-                Items = items,
-                Title = GetAttributeValue( "ChecklistTitle" ),
-                Description = GetAttributeValue( "ChecklistDescription" )
-            } );
-        }
-
+        /// <summary>
+        /// Marks the defined value as selected.
+        /// </summary>
+        /// <param name="id">The identifier.</param>
+        /// <param name="state">if set to <c>true</c> [state].</param>
+        /// <returns></returns>
         [ActionName( "SetSelected" )]
         public async Task<IActionResult> SetSelected( int id, bool state )
         {
@@ -136,6 +143,10 @@ namespace RockWebCore.BlockTypes
             return new OkResult();
         }
 
+        #endregion
+
+        #region Support Classes
+
         protected class Item
         {
             public int Id { get; set; }
@@ -146,5 +157,7 @@ namespace RockWebCore.BlockTypes
 
             public bool Selected { get; set; }
         }
+
+        #endregion
     }
 }

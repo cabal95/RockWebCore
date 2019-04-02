@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-
+using Microsoft.Extensions.DependencyInjection;
 using RockWebCore.BlockTypes;
 using RockWebCore.DynamicRun;
 
@@ -11,7 +11,7 @@ namespace RockWebCore
     {
         private static AssemblyCollector AssemblyCollector = new AssemblyCollector( "wwwroot/Blocks", "*.cs", true );
 
-        public static IBlockType GetMappedBlockType( this Rock.Web.Cache.BlockCache block )
+        public static IBlockType GetMappedBlockType( this Rock.Web.Cache.BlockCache block, IServiceProvider serviceProvider )
         {
             var blockPath = block.BlockType.Path;
 
@@ -36,7 +36,7 @@ namespace RockWebCore
 
             if ( type != null )
             {
-                return ( IBlockType ) Activator.CreateInstance( type );
+                return ( IBlockType ) ActivatorUtilities.CreateInstance( serviceProvider, type );
             }
 
             return new UnsupportedBlockType();
