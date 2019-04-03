@@ -1,10 +1,6 @@
-﻿<%@ Page Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogPage" %>
-<%@ Import Namespace="System.Web.Optimization" %>
-<%@ Import Namespace="Rock" %>
+﻿<!DOCTYPE html>
 
-<!DOCTYPE html>
-
-<script runat="server">
+<!--
 
     /// <summary>
     /// An optional subtitle
@@ -73,18 +69,32 @@
         }
     }
 
-</script>
+-->
 
 <html class="no-js">
 <head runat="server">
     <title></title>
 
-    <script src="<%# ResolveRockUrl("~/Scripts/modernizr.js", true) %>"></script>
-    <script src="<%# System.Web.Optimization.Scripts.Url("~/Scripts/Bundles/RockJQueryLatest") %>"></script>
+    <script src="{{ '~/Scripts/modernizr.js' | ResolveRockUrl }}"></script>
+    <script src="{{ '~/Scripts/Bundles/RockJQueryLatest.js' | ResolveRockUrl }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
 
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/bootstrap.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~~/Styles/theme.css", true) %>" />
-    <link rel="stylesheet" href="<%# ResolveRockUrl("~/Styles/developer.css", true) %>" />
+    <script>
+        Sys = {};
+        Sys.Application = {};
+        Sys.Application.add_load = function(fn) {
+            $(document).ready(fn());
+        };
+    </script>
+    <script>
+        require.config({
+            baseUrl:'/'
+        });
+    </script>
+
+    <link rel="stylesheet" href="{{ '~~/Styles/bootstrap.css' | ResolveRockUrl:true }}"/>
+	<link rel="stylesheet" href="{{ '~~/Styles/theme.css' | ResolveRockUrl:true }}"/>
+	<link rel="stylesheet" href="{{ '~/Styles/developer.css' | ResolveRockUrl:true }}"/>
 
     <style>
         html, body {

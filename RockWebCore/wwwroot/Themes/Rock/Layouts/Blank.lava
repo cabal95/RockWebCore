@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+
+<html class="no-js">
+<head runat="server">
+    <title></title>
+
+    <script src="{{ '~/Scripts/modernizr.js' | ResolveRockUrl }}"></script>
+    <script src="{{ '~/Scripts/Bundles/RockJQueryLatest.js' | ResolveRockUrl }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+
+    <script>
+        Sys = {};
+        Sys.Application = {};
+        Sys.Application.add_load = function(fn) {
+            $(document).ready(fn());
+        };
+    </script>
+    <script>
+        require.config({
+            baseUrl:'/'
+        });
+    </script>
+
+    <link rel="stylesheet" href="{{ '~~/Styles/bootstrap.css' | ResolveRockUrl:true }}"/>
+	<link rel="stylesheet" href="{{ '~~/Styles/theme.css' | ResolveRockUrl:true }}"/>
+	<link rel="stylesheet" href="{{ '~/Styles/developer.css' | ResolveRockUrl:true }}"/>
+
+    <style>
+        html, body {
+            height: auto;
+            width: 100%;
+            min-width: 100%;
+            margin: 0 0 0 0;
+            padding: 0 0 0 0;
+            vertical-align: top;
+        }
+    </style>
+
+</head>
+
+<body class="rock-blank">
+    <form id="form1" runat="server">
+        <div id="updateProgress" style="display: none">
+            <div class="updateprogress-status">
+                <div class="spinner">
+                    <div class="rect1"></div>
+                    <div class="rect2"></div>
+                    <div class="rect3"></div>
+                    <div class="rect4"></div>
+                    <div class="rect5"></div>
+                </div>
+            </div>
+            <div class="updateprogress-bg modal-backdrop">
+            </div>
+        </div>
+
+        <main class="container-fluid">
+            <!-- Start Content Area -->
+            <Rock:Zone Name="Main" />
+        </main>
+    </form>
+</body>
+</html>

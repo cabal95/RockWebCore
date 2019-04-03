@@ -12,16 +12,6 @@ namespace RockWebCore.BlockTypes
     [LegacyBlock( "~/Blocks/Security/Login.ascx" )]
     public class Login : VueBlock
     {
-        protected virtual string ImportComponent( string path )
-        {
-            var js = File.ReadAllText( $"{path}.js" );
-            var templateLines = File.ReadAllLines( path );
-
-            var template = string.Join( " +\n", templateLines.Select( s => s.ToJson() ) );
-
-            return js.Replace( "$$template$$", template ).Trim().TrimEnd( ';' );
-        }
-
         public override async Task RenderAsync( TextWriter writer )
         {
             string helpUrl = string.Empty;
