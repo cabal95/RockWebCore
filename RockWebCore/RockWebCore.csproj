@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Blocks\Administration\SystemInfo.vue.cs" />
+    <Content Remove="wwwroot\Blocks\Administration\SystemInfo.vue.ts" />
     <Content Remove="wwwroot\Blocks\Security\Login.vue.cs" />
     <Content Remove="wwwroot\Blocks\Security\Login.vue.ts" />
     <Content Remove="wwwroot\Blocks\Utility\check-list-item.component.ts" />
@@ -25,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="wwwroot\Blocks\Administration\SystemInfo.vue.cs" />
     <Compile Include="wwwroot\Blocks\Security\Login.vue.cs" />
     <Compile Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
   </ItemGroup>
@@ -62,6 +65,7 @@
     <None Include="wwwroot\Blocks\Utility\check-list-item.component.ts" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="wwwroot\Blocks\Administration\SystemInfo.vue.ts" />
     <TypeScriptCompile Include="wwwroot\Blocks\Security\Login.vue.ts" />
     <TypeScriptCompile Include="wwwroot\Scripts\RockControls.ts" />
   </ItemGroup>
