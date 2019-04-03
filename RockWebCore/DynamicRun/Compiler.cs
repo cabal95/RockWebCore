@@ -113,6 +113,8 @@ namespace RockWebCore.DynamicRun
                 else
                 {
                     Assembly = null;
+                    var exceptions = Errors.Select( e => new Exception( e ) ).ToList();
+                    throw new AggregateException( exceptions );
                 }
 
                 return result.Success;
@@ -141,6 +143,7 @@ namespace RockWebCore.DynamicRun
                 "System.Private.CoreLib",
                 "System.Private.Uri",
                 "System.Collections",
+                "System.Data.Common",
                 "System.IO.FileSystem",
                 "System.Linq",
                 "System.Linq.Expressions",
@@ -153,7 +156,7 @@ namespace RockWebCore.DynamicRun
             // Add in system assemblies that for whatever reason are not in our directory.
             //
             var references = trustedAssembliesPaths
-                .Where( p => neededAssemblies.Contains( Path.GetFileNameWithoutExtension( p ) ) )
+//                .Where( p => neededAssemblies.Contains( Path.GetFileNameWithoutExtension( p ) ) )
                 .Select( p => ( MetadataReference ) MetadataReference.CreateFromFile( p ) )
                 .ToList();
 
@@ -167,7 +170,13 @@ namespace RockWebCore.DynamicRun
             //
             var refPath = Path.GetDirectoryName( Assembly.GetExecutingAssembly().Location );
             var refFiles = Directory.GetFiles( refPath, "*.dll" );
-            references.AddRange( refFiles.Select( f => ( MetadataReference ) MetadataReference.CreateFromFile( f ) ) );
+            foreach ( var refFile in refFiles )
+            {
+                if ( !references.Any( r => Path.GetFileName( r.Display ) == Path.GetFileName( refFile ) ) )
+                {
+                    references.Add( ( MetadataReference ) MetadataReference.CreateFromFile( refFile ) );
+                }
+            }
 
             //
             // Compile the files.
