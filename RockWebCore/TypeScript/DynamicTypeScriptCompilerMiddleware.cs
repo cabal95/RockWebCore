@@ -1,22 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 using Rock;
-using Rock.Data;
-using Rock.Model;
 using Rock.TypeScript;
-using Rock.Web.Cache;
-
-using RockWebCore.UI;
 
 namespace RockWeb.TypeScript
 {
@@ -29,7 +17,7 @@ namespace RockWeb.TypeScript
 
         private readonly Dictionary<string, CachedContent> _cachedFiles = new Dictionary<string, CachedContent>();
 
-        private readonly int _cacheTime = 3600;
+        private readonly int _cacheTime = 0;
 
         #endregion
 
@@ -81,7 +69,7 @@ namespace RockWeb.TypeScript
             //
             if ( _cachedFiles.ContainsKey( path ) )
             {
-                if ( context.Request.Headers.ContainsKey( "If-None-Match" ) && context.Request.Headers["If-None-Match"] == _cachedFiles[path].ETag )
+                if ( context.Request.Headers.ContainsKey( "If-None-Match" ) && context.Request.Headers["If-None-Match"] == fileInfo.LastWriteTime.ToString() )
                 {
                     context.Response.StatusCode = 304;
                     return;

@@ -111,15 +111,13 @@
 
 <body id="dialog" class="rock-modal">
     <form id="form1" runat="server">
-        <asp:ScriptManager ID="sManager" runat="server" />
-        <asp:UpdatePanel ID="updatePanelDialog" runat="server">
-            <ContentTemplate>
                 <div class="modal-content">
                     <Rock:HiddenFieldWithClass ID="hfCloseMessage" runat="server" CssClass="modal-close-message" />
                     <div class="modal-header">
                         <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">&times;</a>
                         <h3 class="modal-title">
-                            <asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+                            <asp:Literal ID="lTitle" runat="server"></asp:Literal>
+						</h3>
                         <asp:Literal ID="lSubTitle" runat="server"></asp:Literal>
                     </div>
 
@@ -135,12 +133,10 @@
                     </div>
 
                     <div class="modal-footer">
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-link" OnClientClick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());" CausesValidation="false" />
+                        <a class="btn btn-link" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">Close</a>
                         <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
                     </div>
                 </div>
-            </ContentTemplate>
-        </asp:UpdatePanel>
     </form>
 </body>
 
