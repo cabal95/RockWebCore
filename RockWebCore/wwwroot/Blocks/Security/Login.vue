@@ -1,4 +1,5 @@
-﻿<div id="$$id$$" class="login-block">
+﻿<template>
+<div>
     <fieldset>
         <legend>Login</legend>
 
@@ -29,3 +30,52 @@
         </div>
     </fieldset>
 </div>
+</template>
+<script lang="ts">
+    import Vue from 'Scripts/vue';
+    import { RockTextBox } from 'Scripts/RockControls';
+    declare var template: string;
+
+    export default function (id, options) {
+        var vm = new Vue({
+            el: '#' + id,
+            template: template,
+            data: options,
+            components: {
+                rockTextBox: RockTextBox
+            },
+            methods: {
+                onClick: function () {
+                    this.ButtonDisabled = true;
+
+                    var data = {
+                        Username: this.Username,
+                        Password: this.Password
+                    };
+
+                    var options = {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    };
+
+                    var _this = this;
+                    fetch('/api/Auth/Login', options)
+                        .then(function (res) {
+                            console.log('done');
+                            _this.ButtonDisabled = false;
+
+                            if (res.ok !== true) {
+                                _this.Message = _this.NoAccountText;
+                            }
+                            else {
+                                window.location = _this.RedirectUrl;
+                            }
+                        });
+                }
+            }
+        });
+    }
+</script>

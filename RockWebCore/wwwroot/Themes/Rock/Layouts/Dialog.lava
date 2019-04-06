@@ -1,76 +1,14 @@
 ﻿<!DOCTYPE html>
 
 <!--
-
-    /// <summary>
-    /// An optional subtitle
-    /// </summary>
-    /// <value>
-    /// The sub title.
-    /// </value>
-    public override string SubTitle
-    {
-        get
-        {
-            return lSubTitle.Text.TrimStart( "<small>".ToCharArray() ).TrimEnd( "</small>".ToCharArray() );
-        }
-        set
-        {
-            lSubTitle.Text = string.IsNullOrWhiteSpace( value ) ? "" : "<small>" + value + "</small>";
-        }
-    }
-
-    /// <summary>
-    /// Gets or sets the close message.
-    /// </summary>
-    /// <value>
-    /// The close message.
-    /// </value>
-    public override string CloseMessage
-    {
-        get
-        {
-            return hfCloseMessage.Value;
-        }
-        set
-        {
-            hfCloseMessage.Value = value;
-        }
-    }
-
-    /// <summary>
-    /// Handles the Click event of the btnSave control.
-    /// </summary>
-    /// <param name="sender">The source of the event.</param>
-    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
     protected void btnSave_Click( object sender, EventArgs e )
     {
         base.FireSave( sender, e );
     }
-
-    /// <summary>
-    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-    /// </summary>
-    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnInit( EventArgs e )
-    {
-        base.OnInit( e );
-
-        lTitle.Text = Request.QueryString["t"] ?? "Title";
-
-        btnSave.Text = Request.QueryString["pb"] ?? "Save";
-        btnSave.Visible = btnSave.Text.Trim() != string.Empty;
-
-        btnCancel.Text = Request.QueryString["sb"] ?? "Cancel";
-        btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
-        if ( !btnSave.Visible )
-        {
-            btnCancel.AddCssClass( "btn-primary" );
-        }
-    }
-
 -->
-
+{%- assign Title = 'Global' | PageAttribute:'t' -%}
+{%- assign SaveText = 'Global' | PageParameter:'pb' | Default:'Save' -%}
+{%- assign CancelText = 'Global' | PageParameter:'sb' | Default:'Cancel' -%}
 <html class="no-js">
 <head runat="server">
     <title></title>
@@ -88,6 +26,12 @@
     </script>
     <script>
         require.config({
+            paths: {
+                'VueLoader': 'https://unpkg.com/requirejs-vue@1.1.5/requirejs-vue'
+            },
+            config: {
+                'VueLoader': { }
+            },
             baseUrl:'/'
         });
     </script>
@@ -116,9 +60,8 @@
                     <div class="modal-header">
                         <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">&times;</a>
                         <h3 class="modal-title">
-                            <asp:Literal ID="lTitle" runat="server"></asp:Literal>
+                            {{ 'Global' | PageParameter:'t' }}
 						</h3>
-                        <asp:Literal ID="lSubTitle" runat="server"></asp:Literal>
                     </div>
 
                     <div class="modal-body">
@@ -133,8 +76,12 @@
                     </div>
 
                     <div class="modal-footer">
-                        <a class="btn btn-link" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">Close</a>
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
+						{%- if CancelText != empty -%}
+                            <a class="btn btn-link{%- if SaveText == empty -%} btn-primary{%- endif -%}" onclick="window.parent.Rock.controls.modal.close($(this).closest('.modal-content').find('.modal-close-message').first().val());">{{ CancelText }}</a>
+						{%- endif -%}
+						{%- if SaveText != empty -%}
+                            <a class="btn btn-primary" OnClick="btnSave_Click ">{{ SaveText }}</a>
+						{%- endif -%}
                     </div>
                 </div>
     </form>

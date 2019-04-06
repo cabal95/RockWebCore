@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -85,7 +86,14 @@ namespace RockWebCore
             System.Web.HttpContext.Configure( app.ApplicationServices.GetRequiredService<IHttpContextAccessor>() );
 
             app.UseRockBundles();
-            app.UseStaticFiles();
+
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".vue"] = "text/vue";
+
+            app.UseStaticFiles( new StaticFileOptions
+            {
+                ContentTypeProvider = provider
+            } );
 
             //
             // Provides a single RockRequestContext to each request.
@@ -147,6 +155,7 @@ namespace RockWebCore
             DotLiquid.Template.RegisterSafeType( typeof( Enum ), o => o.ToString() );
             DotLiquid.Template.RegisterSafeType( typeof( DBNull ), o => null );
             DotLiquid.Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
+            DotLiquid.Template.RegisterFilter( typeof( RockWebCore.DotLiquidFilters ) );
         }
     }
 }

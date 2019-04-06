@@ -29,6 +29,12 @@
     </script>
     <script>
         require.config({
+            paths: {
+                'VueLoader': 'https://unpkg.com/requirejs-vue@1.1.5/requirejs-vue'
+            },
+            config: {
+                'VueLoader': { }
+            },
             baseUrl:'/'
         });
     </script>
