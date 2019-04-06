@@ -13,12 +13,12 @@
     <Content Remove="wwwroot\Blocks\Administration\SystemInfo.vue.cs" />
     <Content Remove="wwwroot\Blocks\Administration\SystemInfo.vue.ts" />
     <Content Remove="wwwroot\Blocks\Security\Login.vue.cs" />
-    <Content Remove="wwwroot\Blocks\Security\Login.vue.ts" />
     <Content Remove="wwwroot\Blocks\Utility\check-list-item.component.ts" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
     <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
-    <Content Remove="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
+    <Content Remove="wwwroot\controls.ts" />
     <Content Remove="wwwroot\Scripts\RockControls.ts" />
+    <Content Remove="wwwroot\validation.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -35,7 +35,6 @@
   <ItemGroup>
     <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.cs" />
     <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue" />
-    <None Include="wwwroot\Blocks\Utility\DefinedTypeCheckList.vue.ts" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,7 +65,11 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="wwwroot\Blocks\Administration\SystemInfo.vue.ts" />
-    <TypeScriptCompile Include="wwwroot\Blocks\Security\Login.vue.ts" />
+    <TypeScriptCompile Include="wwwroot\controls.ts" />
     <TypeScriptCompile Include="wwwroot\Scripts\RockControls.ts" />
+    <TypeScriptCompile Include="wwwroot\validation.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="wwwroot\types\" />
   </ItemGroup>
 </Project>

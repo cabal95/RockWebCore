@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+    <script>
+        require.config({
+            baseUrl: '/'
+        });
+    </script>
+
+</head>
+<body>
+
+    <div id="v">
+        <p>{{ Message }}</p>
+        <p @click="toggle()">Toggle</p>
+        <component v-bind:is="component" v-bind:item-obj="Item"></component>
+        <h3>History</h3>
+        <component v-for="i in history" v-bind:is="i" v-bind:item-obj="Item"></component>
+    </div>
+
+<!--
+    This code is to demonstrate a few things.
+
+    1. We can use the <component> tag to dynamically swap out components.
+    2. If the "is" component name is null, no errors and nothing renders.
+    3. We can also overwrite existing component names.
+    4. Overwriting an existing component also updates any previously rendered component.
+-->
+    <script>
+        require(['Scripts/vue'], function (vue) {
+            vue.default.component('rock.textbox', {
+                template: '<div>Text Box {{ itemObj.Data }}</div>',
+                props: ['itemObj']
+            });
+
+            vue.default.component('rock.datebox', {
+                template: '<div>Date Box {{ itemObj.Data }}</div>',
+                props: ['itemObj']
+            });
+
+            var res = vue.default.compile('<div>Dynamic object {{ itemObj.Data }}</div>');
+            vue.default.component('rock.dynamic', {
+                render: res.render,
+                props: ['itemObj']
+            });
+
+            new vue.default({
+                el: '#v',
+                data: {
+                    "BlockId": 351,
+                    "Message": "Hello World!",
+                    "Item": {
+                        Data: "Some Data"
+                    },
+                    "components": ['rock.textbox', null, 'rock.datebox', 'rock.dynamic'],
+                    "componentIndex": 0,
+                    "history": []
+                },
+                computed: {
+                    component: function () {
+                        return this.components[this.componentIndex];
+                    }
+                },
+                methods: {
+                    toggle: function () {
+                        this.history.push(this.component);
+
+                        if (this.componentIndex + 1 >= this.components.length) {
+                            var res = vue.default.compile('<div>Dynamic object #' + this.history.length + ' {{ itemObj.Data }}</div>');
+                            vue.default.component('rock.dynamic', {
+                                render: res.render,
+                                props: ['itemObj']
+                            });
+
+                            this.componentIndex = 0;
+                        }
+                        else {
+                            this.componentIndex++;
+                        }
+                    }
+                }
+            })
+        });
+    </script>
+</body>
+</html>
