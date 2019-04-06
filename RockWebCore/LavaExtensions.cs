@@ -11,6 +11,7 @@ using Fluid.Values;
 
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
+using Rock;
 using RockWebCore.UI;
 
 namespace RockWebCore
@@ -193,6 +194,32 @@ namespace RockWebCore
         }
     }
 
+    public static class DotLiquidFilters
+    {
+        /// <summary>
+        /// Returns the specified page parm.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="parm">The parm.</param>
+        /// <returns></returns>
+        public static object PageParameter( string input, string parm )
+        {
+            var parmReturn = RockRequestContext.Current?.PageParameter( parm );
+
+            if ( parmReturn == null )
+            {
+                return null;
+            }
+
+            if ( parmReturn.AsIntegerOrNull().HasValue )
+            {
+                return parmReturn.AsIntegerOrNull();
+            }
+
+            return parmReturn;
+        }
+    }
+
     public static class LavaExtensions
     {
         static LavaExtensions()
@@ -200,6 +227,7 @@ namespace RockWebCore
             TemplateContext.GlobalFilters.AddFilter( "ResolveRockUrl", ResolveRockUrl );
             TemplateContext.GlobalFilters.AddFilter( "ReadFile", ReadFile );
             RegisterLegacyFilters( typeof( Rock.Lava.RockFilters ) );
+            RegisterLegacyFilters( typeof( DotLiquidFilters ) );
 
             TemplateContext.GlobalMemberAccessStrategy = new RockMemberAccessStrategy();
             TemplateContext.GlobalFileProvider = new RockLavaFileProvider();
