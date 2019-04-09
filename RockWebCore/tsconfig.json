@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "experimentalDecorators": true,
     "noImplicitAny": false,
     "noEmitOnError": true,
     "removeComments": false,
@@ -9,6 +10,6 @@
   },
   "exclude": [
     "node_modules",
-    "wwwroot"
+    "wwwroot2"
   ]
 }

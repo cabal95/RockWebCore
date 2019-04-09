@@ -17,9 +17,7 @@ namespace RockWebCore.UI
 
             RockPage.RegisterStartupScript( GetType(), $"VueApp-{BlockId}", script );
 
-            writer.WriteLine( $"<div id=\"vueapp_{BlockId}\">" );
-            //await writer.WriteLineAsync( await File.ReadAllTextAsync( "wwwroot/" + path ) );
-            writer.WriteLine( "</div>" );
+            await writer.WriteLineAsync( $"<div id=\"vueapp_{BlockId}\"></div>" );
         }
     }
 }
