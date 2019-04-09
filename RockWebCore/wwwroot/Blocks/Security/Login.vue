@@ -5,12 +5,14 @@
 
         <div class="row">
             <div class="col-sm-12">
+                <rock.validationsummary header-text="Please correct the following:" class="alert alert-warning"></rock.validationsummary>
+
                 {{ PromptMessage }}
                 {{ InvalidPersonTokenText }}
 
-                <rock.textbox ref="username" title="Username" v-model:value="Username"></rock.textbox>
+                <rock.textbox ref="username" title="Username" v-model:value="Username" :is-required="true"></rock.textbox>
 
-                <rock.textbox ref="password" title="Password" type="password" v-model:value="Password"></rock.textbox>
+                <rock.textbox ref="password" title="Password" type="password" v-model:value="Password" :is-required="true"></rock.textbox>
 
                 <div class="checkbox">
                     <label title="">
@@ -36,7 +38,7 @@
 </template>
 <script lang="ts">
     import Vue from 'Scripts/vue';
-    import { RockTextBox, ValidationManager } from 'Scripts/RockControls';
+    import { RockTextBox, BlockValidator, RockValidationSummary } from 'Scripts/RockControls';
     declare var template: string;
 
     export default function (id, options) {
@@ -45,19 +47,13 @@
             template: template,
             data: options,
             components: {
-                'rock.textbox': RockTextBox
+                'rock.textbox': RockTextBox,
+                'rock.validationsummary': RockValidationSummary
             },
             methods: {
                 onClick: function () {
-                    let validation = new ValidationManager();
-                    let success = validation.validateControl(this);
-                    if (!success) {
-                        var messages = validation.validationMessages.map(function (msg) {
-                            return `<li>${msg}</li>`;
-                        }).join('');
-
-                        this.Message = `<p>Please correct the following:</p><ul>${messages}</ul>`;
-
+                    let validation = new BlockValidator(this);
+                    if (!validation.validate()) {
                         return;
                     }
 
@@ -79,8 +75,6 @@
                     var _this = this;
                     fetch('/api/Auth/Login', options)
                         .then(function (res) {
-                            console.log('done');
-
                             if (res.ok !== true) {
                                 _this.ButtonDisabled = false;
                                 _this.Message = _this.NoAccountText;
