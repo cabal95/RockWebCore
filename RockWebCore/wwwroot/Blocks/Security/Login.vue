@@ -1,5 +1,6 @@
 ﻿<template>
-<div>
+<form v-on:submit.prevent="login">
+    <input type="submit" style="display: none;" />
     <fieldset>
         <legend>Login</legend>
 
@@ -21,7 +22,7 @@
                     </label>
                 </div>
 
-                <a class="btn btn-primary" v-bind:class="{'disabled': ButtonDisabled}" @click="onClick">
+                <a class="btn btn-primary" v-bind:class="{'disabled': ButtonDisabled}" @click.prevent="login">
                     <span v-if="ButtonDisabled"><i class="fa fa-sync fa-spin"></i> Logging In...</span>
                     <span v-if="!ButtonDisabled">Log In</span>
                 </a>
@@ -34,11 +35,12 @@
             </div>
         </div>
     </fieldset>
-</div>
+</form>
 </template>
 <script lang="ts">
     import Vue from 'Scripts/vue';
     import { RockTextBox, BlockValidator, RockValidationSummary } from 'Scripts/RockControls';
+    import axios from 'Scripts/axios';
     declare var template: string;
 
     export default function (id, options) {
@@ -51,7 +53,7 @@
                 'rock.validationsummary': RockValidationSummary
             },
             methods: {
-                onClick: function () {
+                login: function () {
                     let validation = new BlockValidator(this);
                     if (!validation.validate()) {
                         return;
@@ -59,29 +61,17 @@
 
                     this.ButtonDisabled = true;
 
-                    var data = {
+                    let _this = this;
+                    axios.post('/api/Auth/Login', {
                         Username: this.Username,
                         Password: this.Password
-                    };
-
-                    var options = {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(data)
-                    };
-
-                    var _this = this;
-                    fetch('/api/Auth/Login', options)
-                        .then(function (res) {
-                            if (res.ok !== true) {
-                                _this.ButtonDisabled = false;
-                                _this.Message = _this.NoAccountText;
-                            }
-                            else {
-                                window.location = _this.RedirectUrl;
-                            }
+                    })
+                        .then(function () {
+                            window.location = _this.RedirectUrl;
+                        })
+                        .catch(function (error) {
+                            _this.ButtonDisabled = false;
+                            _this.Message = _this.NoAccountText;
                         });
                 }
             }
