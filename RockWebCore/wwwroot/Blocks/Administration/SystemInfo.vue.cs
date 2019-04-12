@@ -315,16 +315,11 @@ namespace RockWebCore.BlockTypes
             }
             catch ( Exception ex )
             {
-                nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
-                nbMessage.Visible = true;
-                nbMessage.Text = "The following error occurred when attempting to delete cached files: " + ex.Message;
-                return;
+                return new OkObjectResult( new {
+                    Error = true,
+                    Messages = new [] { $"The following error occurred when attempting to delete cahced files: {ex.Message}"
+                } );
             }
-
-            nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
-            nbMessage.Visible = true;
-            nbMessage.Title = "Clear Cache";
-            nbMessage.Text = string.Format( "<p>{0}</p>", msgs.AsDelimited( "<br />" ) );
 #endif
 
             return new OkObjectResult( new {
