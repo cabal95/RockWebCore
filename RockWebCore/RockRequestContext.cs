@@ -295,11 +295,11 @@ namespace RockWebCore
         /// </summary>
         /// <param name="name">The key whose value is wanted.</param>
         /// <returns></returns>
-        public virtual string PageParameter( string name )
+        public virtual string PageParameter( string name, string defaultValue = "" )
         {
             if ( string.IsNullOrWhiteSpace( name ) )
             {
-                return string.Empty;
+                return defaultValue;
             }
 
             if ( HttpContext != null )
@@ -327,7 +327,7 @@ namespace RockWebCore
                 }
             }
 
-            return string.Empty;
+            return defaultValue;
         }
 
         #endregion

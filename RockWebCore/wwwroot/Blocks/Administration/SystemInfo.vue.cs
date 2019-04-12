@@ -8,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Mvc;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -36,6 +36,7 @@ namespace RockWebCore.BlockTypes
 
             await RegisterVueApp( writer, "Blocks/Administration/SystemInfo.vue", new
             {
+                BlockId,
                 RockVersion = string.Format( "{0} <small>({1})</small>", VersionInfo.GetRockProductVersionFullName(), VersionInfo.GetRockProductVersionNumber() ),
                 ClientCulture = System.Globalization.CultureInfo.CurrentCulture.ToString(),
                 Database = GetDbInfo(),
@@ -272,6 +273,64 @@ namespace RockWebCore.BlockTypes
         private bool RestartWebApplication()
         {
             return false;
+        }
+
+        #endregion
+
+        #region Actions
+
+        /// <summary>
+        /// Used to manually flush the cache.
+        /// </summary>
+        [ActionName( "ClearCache" )]
+        public IActionResult btnClearCache_Click()
+        {
+            var msgs = RockCache.ClearAllCachedItems();
+
+            // Flush today's Check-in Codes
+            Rock.Model.AttendanceCodeService.FlushTodaysCodes();
+
+#if false
+            string webAppPath = Server.MapPath( "~" );
+
+            // Check for any unregistered entity types, field types, and block types
+            EntityTypeService.RegisterEntityTypes( webAppPath );
+            FieldTypeService.RegisterFieldTypes( webAppPath );
+            BlockTypeService.RegisterBlockTypes( webAppPath, Page, false );
+            msgs.Add( "EntityTypes, FieldTypes, BlockTypes have been re-registered" );
+
+            // Delete all cached files
+            try
+            {
+                var dirInfo = new DirectoryInfo( Path.Combine( webAppPath, "App_Data/Cache" ) );
+                foreach ( var childDir in dirInfo.GetDirectories() )
+                {
+                    childDir.Delete( true );
+                }
+                foreach ( var file in dirInfo.GetFiles().Where( f => f.Name != ".gitignore" ) )
+                {
+                    file.Delete();
+                }
+                msgs.Add( "Cached files have been deleted" );
+            }
+            catch ( Exception ex )
+            {
+                nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Warning;
+                nbMessage.Visible = true;
+                nbMessage.Text = "The following error occurred when attempting to delete cached files: " + ex.Message;
+                return;
+            }
+
+            nbMessage.NotificationBoxType = Rock.Web.UI.Controls.NotificationBoxType.Success;
+            nbMessage.Visible = true;
+            nbMessage.Title = "Clear Cache";
+            nbMessage.Text = string.Format( "<p>{0}</p>", msgs.AsDelimited( "<br />" ) );
+#endif
+
+            return new OkObjectResult( new {
+                Error = false,
+                Messages = msgs
+            } );
         }
 
         #endregion

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -116,20 +117,6 @@ namespace RockWebCore
                 await next();
             } );
 
-            //
-            // Temporary, since we don't have a way to clear cache without restarting, clear
-            // cache before each reqeust.
-            //
-            app.Use( async ( context, next ) =>
-            {
-                if ( context.Request.Query.ContainsKey( "clearcache" ) )
-                {
-                    RockCache.ClearAllCachedItems();
-                }
-
-                await next();
-            } );
-
             var odataBuilder = new ODataConventionModelBuilder( app.ApplicationServices );
 
             app.UseMvc( routeBuilder =>
@@ -142,7 +129,7 @@ namespace RockWebCore
 
             ConfigureDotLiquid();
 
-            //new Rock.Data.RockContext().Database.Migrate();
+            new Rock.Data.RockContext().Database.Migrate();
         }
 
         /// <summary>

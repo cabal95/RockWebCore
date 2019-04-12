@@ -7,8 +7,10 @@
     }
 -->
 {%- assign Title = 'Global' | PageAttribute:'t' -%}
-{%- assign SaveText = 'Global' | PageParameter:'pb' | Default:'Save' -%}
-{%- assign CancelText = 'Global' | PageParameter:'sb' | Default:'Cancel' -%}
+{%- assign SaveText = 'Global' | PageParameter:'pb','__novalue__' -%}
+{%- assign CancelText = 'Global' | PageParameter:'sb','__novalue__' -%}
+{%- if SaveText == '__novalue__' -%}{%- assign SaveText = 'Save' -%}{%- endif -%}
+{%- if CancelText == '__novalue__' -%}{%- assign CancelText = 'Cancel' -%}{%- endif -%}
 <html class="no-js">
 <head runat="server">
     <title></title>

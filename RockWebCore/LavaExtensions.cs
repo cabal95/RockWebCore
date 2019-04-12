@@ -202,13 +202,13 @@ namespace RockWebCore
         /// <param name="input">The input.</param>
         /// <param name="parm">The parm.</param>
         /// <returns></returns>
-        public static object PageParameter( string input, string parm )
+        public static object PageParameter( string input, string parm, string defaultValue = "" )
         {
-            var parmReturn = RockRequestContext.Current?.PageParameter( parm );
+            var parmReturn = RockRequestContext.Current?.PageParameter( parm, defaultValue );
 
             if ( parmReturn == null )
             {
-                return null;
+                return defaultValue;
             }
 
             if ( parmReturn.AsIntegerOrNull().HasValue )
