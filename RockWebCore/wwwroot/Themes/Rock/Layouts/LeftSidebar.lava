@@ -1,43 +1,20 @@
-﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
-
-<script runat="server">
-
-    // keep code below to call base class init method
-
-    /// <summary>
-    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-    /// </summary>
-    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-    protected override void OnPreRender( EventArgs e )
-    {
-        base.OnPreRender( e );
-
-        var rockPage = this.Page as Rock.Web.UI.RockPage;
-        if (rockPage != null)
-        {
-            var pageCache = Rock.Web.Cache.PageCache.Get( rockPage.PageId );
-            if (pageCache != null )
-            {
-                if (pageCache.PageDisplayTitle == false || string.IsNullOrWhiteSpace( rockPage.PageTitle ) )
-                {
-                    secPageTitle.Visible = false;
-                }
-            }
-        }
-    }
-
-</script>
-
-<asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
+﻿{% masterpage '~~/Layouts/Master.lava' %}
 
     <!-- Start Content Area -->
 
     <!-- Page Title -->
+    {% if CurrentPage.PageCache.PageDisplayTitle == true and CurrentPage.PageCache.PageTitle != '' %}
     <section id="secPageTitle" class="page-title" runat="server">
-        <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
-        <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-        <Rock:PageDescription ID="PageDescription" runat="server" />
+        <h1 class="title">
+            {% if CurrentPage.PageCache.PageDisplayIcon == true %}
+                <i class="{{ CurrentPage.PageCache.PageIcon }}"></i>
+            {% endif %}
+            {{ CurrentPage.PageCache.PageTitle }}
+        </h1>
+        {{ CurrentPage.BreadCrumbContent }}
+        {{ CurrentPage.PageDescriptionContent }}
     </section>
+    {% endif %}
 
     <section id="page-content">
         <!-- Ajax Error -->
@@ -81,6 +58,4 @@
     </section>
     <!-- End Content Area -->
 
-
-
-</asp:Content>
+{% endmasterpage %}

@@ -51,7 +51,7 @@ namespace RockWebCore.UI
 
         #region Public Properties
 
-        private PageCache PageCache { get; }
+        public PageCache PageCache { get; }
 
         public int PageId => PageCache.Id;
 
