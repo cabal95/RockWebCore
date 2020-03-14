@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
@@ -27,9 +28,9 @@ namespace RockWebCore
     {
         public IConfiguration Configuration { get; private set; }
 
-        public IHostingEnvironment Environment { get; private set; }
+        public IWebHostEnvironment Environment { get; private set; }
 
-        public Startup( IConfiguration configuration, IHostingEnvironment environment )
+        public Startup( IConfiguration configuration, IWebHostEnvironment environment )
         {
             Configuration = configuration;
             Environment = environment;
@@ -44,9 +45,10 @@ namespace RockWebCore
                     o.Cookie.Name = ".ROCK";
                 } );
 
+            services.AddControllers( o => o.EnableEndpointRouting = false );
             services.AddMvc( o => o.EnableEndpointRouting = false )
-                .SetCompatibilityVersion( CompatibilityVersion.Version_2_2 )
-                .AddJsonOptions( options =>
+//                .SetCompatibilityVersion( CompatibilityVersion.Version_2_2 )
+                .AddNewtonsoftJson( options =>
                 {
                     options.SerializerSettings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
                     options.SerializerSettings.ContractResolver = new DefaultContractResolver();
@@ -72,7 +74,7 @@ namespace RockWebCore
             } );
         }
 
-        public void Configure( IApplicationBuilder app, IHostingEnvironment env )
+        public void Configure( IApplicationBuilder app, IWebHostEnvironment env )
         {
             if ( env.IsDevelopment() )
             {
@@ -116,8 +118,6 @@ namespace RockWebCore
                 RockRequestContext.Current.SetLegacyValues();
                 await next();
             } );
-
-            var odataBuilder = new ODataConventionModelBuilder( app.ApplicationServices );
 
             app.UseMvc( routeBuilder =>
             {

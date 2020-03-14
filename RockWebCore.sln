@@ -21,6 +21,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.DownhillCss.Core", "..\RockNetCore\Rock.DownhillCss\Rock.DownhillCss.Core.csproj", "{F2F8B375-F1CF-4FEA-96EB-3CC1C364FD3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,10 @@ Global
 		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{133B7118-A1D5-4DDA-AE11-3804CE9E9B79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2F8B375-F1CF-4FEA-96EB-3CC1C364FD3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2F8B375-F1CF-4FEA-96EB-3CC1C364FD3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2F8B375-F1CF-4FEA-96EB-3CC1C364FD3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2F8B375-F1CF-4FEA-96EB-3CC1C364FD3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -65,6 +71,7 @@ Global
 		{1456AB6D-BB95-4865-92E1-8C0E3EC9115D} = {E7462897-10CD-48EF-8B8F-16B7C44F1BA3}
 		{6F0A0666-D723-46C5-9B8D-EDBA54C5A4A5} = {E7462897-10CD-48EF-8B8F-16B7C44F1BA3}
 		{F02A26C7-A0A3-47A7-A27D-ACABCDFE68E5} = {E7462897-10CD-48EF-8B8F-16B7C44F1BA3}
+		{F2F8B375-F1CF-4FEA-96EB-3CC1C364FD3D} = {E7462897-10CD-48EF-8B8F-16B7C44F1BA3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0E41665E-2E40-4F15-ADA9-A4180D3BD911}

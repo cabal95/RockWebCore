@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
-    <AspNetCoreHostingModel>InProcess</AspNetCoreHostingModel>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
     <TypeScriptCompileBlocked>True</TypeScriptCompileBlocked>
@@ -39,12 +38,10 @@
     <PackageReference Include="AngleSharp" Version="0.11.0" />
     <PackageReference Include="Fluid.Core" Version="1.0.0-beta-9545" />
     <PackageReference Include="Jurassic" Version="3.0.0" />
-    <PackageReference Include="Karambolo.AspNetCore.Bundling" Version="1.1.0" />
-    <PackageReference Include="Karambolo.AspNetCore.Bundling.Less" Version="1.1.0" />
-    <PackageReference Include="Karambolo.AspNetCore.Bundling.NUglify" Version="1.1.0" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
+    <PackageReference Include="Karambolo.AspNetCore.Bundling" Version="3.0.0" />
+    <PackageReference Include="Karambolo.AspNetCore.Bundling.Less" Version="3.0.0" />
+    <PackageReference Include="Karambolo.AspNetCore.Bundling.NUglify" Version="3.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.0.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.10.0" />
   </ItemGroup>
 
